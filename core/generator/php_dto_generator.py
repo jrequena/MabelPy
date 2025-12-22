@@ -3,6 +3,8 @@ from core.generator.base_generator import BaseGenerator
 
 class PhpDtoGenerator(BaseGenerator):
 
+    READONLY = True  # ⬅️ activar / desactivar aquí
+
     TYPE_MAP = {
         "int": {
             "type": "int",
@@ -62,10 +64,11 @@ class PhpDtoGenerator(BaseGenerator):
         fields, imports = self.normalize_fields(contract["fields"])
 
         promoted_params = []
+        modifier = "public readonly" if self.READONLY else "public"
 
         for field in fields:
             promoted_params.append(
-                f"public {field['type']} ${field['name']}"
+                f"{modifier} {field['type']} ${field['name']}"
             )
 
         context = {
