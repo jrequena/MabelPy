@@ -9,7 +9,10 @@ use {{ import }};
 
 final class {{ class_name }}
 {
-{% for field in fields %}
-    public {{ field.type }} ${{ field.name }};
+    public function __construct(
+{% for promoted_param in promoted_params %}
+        {{ promoted_param }},
 {% endfor %}
+    ) {
+    }
 }

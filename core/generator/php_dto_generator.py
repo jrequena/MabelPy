@@ -61,11 +61,18 @@ class PhpDtoGenerator(BaseGenerator):
 
         fields, imports = self.normalize_fields(contract["fields"])
 
+        promoted_params = []
+
+        for field in fields:
+            promoted_params.append(
+                f"public {field['type']} ${field['name']}"
+            )
+
         context = {
             "namespace": "App",
             "class_name": contract["entity"]["name"] + "Dto",
-            "fields": fields,
             "imports": imports,
+            "promoted_params": promoted_params,
         }
 
         content = self.render(template, context)

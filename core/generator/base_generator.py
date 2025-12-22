@@ -54,4 +54,12 @@ class BaseGenerator:
             )
         )
 
+        # Promoted params loop
+        output = self._render_loop(
+            output,
+            "promoted_param",
+            context.get("promoted_params", []),
+            lambda block, param: block.replace("{{ promoted_param }}", param)
+        )
+
         return output
