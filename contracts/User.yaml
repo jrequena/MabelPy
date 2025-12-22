@@ -8,6 +8,11 @@ fields:
   - name: email
     type: string
     nullable: true
+    default: null
 
   - name: created_at
     type: datetime
+
+  - name: active
+    type: bool
+    default: true

@@ -48,10 +48,16 @@ class PhpDtoGenerator(BaseGenerator):
             if nullable:
                 php_type = f"?{php_type}"
 
-            normalized.append({
+            field_def = {
                 "name": field["name"],
                 "type": php_type,
-            })
+            }
+
+            # 👉 solo incluir default si viene definido
+            if "default" in field:
+                field_def["default"] = field["default"]
+
+            normalized.append(field_def)
 
             if mapping["import"]:
                 imports.add(mapping["import"])
@@ -67,9 +73,12 @@ class PhpDtoGenerator(BaseGenerator):
         modifier = "public readonly" if self.READONLY else "public"
 
         for field in fields:
-            promoted_params.append(
-                f"{modifier} {field['type']} ${field['name']}"
-            )
+            param = f"{modifier} {field['type']} ${field['name']}"
+
+            if "default" in field:
+                param += " = " + self.format_default(field["default"])
+
+            promoted_params.append(param)
 
         context = {
             "namespace": "App",
@@ -87,3 +96,12 @@ class PhpDtoGenerator(BaseGenerator):
         file_path.write_text(content)
 
         return file_path
+
+    def format_default(self, value):
+        if value is None:
+            return "null"
+        if isinstance(value, bool):
+            return "true" if value else "false"
+        if isinstance(value, str):
+            return f'"{value}"'
+        return str(value)
