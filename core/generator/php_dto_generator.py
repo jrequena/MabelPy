@@ -57,6 +57,10 @@ class PhpDtoGenerator(BaseGenerator):
             if "default" in field:
                 field_def["default"] = field["default"]
 
+            # 👉 solo incluir validations si viene definido
+            if "validations" in field:
+                field_def["validations"] = field["validations"]
+
             normalized.append(field_def)
 
             if mapping["import"]:
@@ -80,11 +84,14 @@ class PhpDtoGenerator(BaseGenerator):
 
             promoted_params.append(param)
 
+        validations = self.generate_validations(contract["fields"])
+
         context = {
             "namespace": "App",
             "class_name": contract["entity"]["name"] + "Dto",
             "imports": imports,
             "promoted_params": promoted_params,
+            "validations": validations,
         }
 
         content = self.render(template, context)
@@ -105,3 +112,33 @@ class PhpDtoGenerator(BaseGenerator):
         if isinstance(value, str):
             return f'"{value}"'
         return str(value)
+
+    def generate_validations(self, fields: list):
+        """Genera líneas PHP de validación para el constructor."""
+        validations = []
+
+        for field in fields:
+            name = field["name"]
+            rules = field.get("validations", [])
+            nullable = field.get("nullable", False)
+
+            for rule in rules:
+                if rule == "positive" and "int" in field["type"]:
+                    indent = " " * 8  # 8 espacios = dos niveles en tu template
+                    condition = f"${name} <= 0" if not nullable else f"${name} !== null && ${name} <= 0"
+                    validations.append(
+                        f"if ({condition}) {{\n{indent}    throw new \\InvalidArgumentException(\"{name} must be positive\");\n{indent}}}"
+                    )
+                elif rule == "email" and "string" in field["type"]:
+                    indent = " " * 8  # 8 espacios = dos niveles en tu template
+                    condition = f"!filter_var(${name}, FILTER_VALIDATE_EMAIL)" if not nullable else f"${name} !== null && !filter_var(${name}, FILTER_VALIDATE_EMAIL)"
+                    validations.append(
+                        f"if ({condition}) {{\n{indent}    throw new \\InvalidArgumentException(\"{name} must be a valid email\");\n{indent}}}"
+                    )
+                # Aquí puedes agregar más reglas (regex, minLength, maxLength, etc.)
+
+        return validations
+
+
+
+

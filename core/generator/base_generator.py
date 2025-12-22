@@ -62,4 +62,16 @@ class BaseGenerator:
             lambda block, param: block.replace("{{ promoted_param }}", param)
         )
 
+        # ✅ Nuevo loop para validaciones
+        output = self._render_loop(
+            output,
+            "validation",
+            context.get("validations", []),
+            lambda block, line: block.replace("{{ validation }}", line)
+        )
+
+        # Reemplazo de variables simples
+        for key, value in context.items():
+            if not isinstance(value, list):
+                output = output.replace(f"{{{{ {key} }}}}", str(value))
         return output

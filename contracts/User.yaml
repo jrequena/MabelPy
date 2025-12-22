@@ -4,11 +4,15 @@ entity:
 fields:
   - name: id
     type: int
+    validations:
+      - positive
 
   - name: email
     type: string
     nullable: true
     default: null
+    validations:
+      - email
 
   - name: created_at
     type: datetime

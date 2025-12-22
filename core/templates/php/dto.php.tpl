@@ -14,5 +14,8 @@ final class {{ class_name }}
         {{ promoted_param }},
 {% endfor %}
     ) {
+{% for validation in validations %}
+        {{ validation }}
+{% endfor %}
     }
 }
