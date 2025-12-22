@@ -35,15 +35,20 @@ class PhpDtoGenerator(BaseGenerator):
 
         for field in fields:
             raw_type = field["type"]
+            nullable = field.get("nullable", False)
 
             if raw_type not in self.TYPE_MAP:
                 raise ValueError(f"Unsupported PHP type: {raw_type}")
 
             mapping = self.TYPE_MAP[raw_type]
+            php_type = mapping["type"]
+
+            if nullable:
+                php_type = f"?{php_type}"
 
             normalized.append({
                 "name": field["name"],
-                "type": mapping["type"],
+                "type": php_type,
             })
 
             if mapping["import"]:
