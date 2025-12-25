@@ -1,15 +1,13 @@
 from core.cli.generate_command import GenerateCommand
+from core.config.loader import ConfigLoader
 
 class Kernel:
     def run(self, argv):
-        if len(argv) < 2:
-            print("Available commands:")
-            print("  generate <contract.yaml>")
-            return
+        config = ConfigLoader().load()
 
-        command = argv[1]
+        command = argv[1] if len(argv) > 1 else None
 
         if command == "generate":
-            GenerateCommand().execute(argv[2:])
+            GenerateCommand(config).execute(argv[2:])
         else:
-            print(f"Unknown command: {command}")
+            print("Unknown command")

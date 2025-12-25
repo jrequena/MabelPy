@@ -1,0 +1,6 @@
+namespace: App
+output_dir: generated
+
+dto:
+  readonly: true
+  validations: true

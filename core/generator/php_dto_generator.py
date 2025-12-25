@@ -28,8 +28,14 @@ class PhpDtoGenerator(BaseGenerator):
         },
     }
 
-    def __init__(self):
+    def __init__(self, config: dict):
         super().__init__("core/templates/php")
+        self.config = config
+
+        dto_config = config.get("dto", {})
+        self.READONLY = dto_config.get("readonly", True)
+        self.ENABLE_VALIDATIONS = dto_config.get("validations", True)
+
 
     def normalize_fields(self, fields: list):
         normalized = []
@@ -85,9 +91,10 @@ class PhpDtoGenerator(BaseGenerator):
             promoted_params.append(param)
 
         validations = self.generate_validations(contract["fields"])
+        namespace = self.config.get("namespace", "App")
 
         context = {
-            "namespace": "App",
+            "namespace": namespace,
             "class_name": contract["entity"]["name"] + "Dto",
             "imports": imports,
             "promoted_params": promoted_params,
