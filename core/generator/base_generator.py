@@ -24,6 +24,13 @@ class BaseGenerator:
         for item in items:
             rendered += render_item(loop_block, item)
 
+        # If loop had no items, avoid leaving extra blank lines from the template block
+        if rendered == "":
+            # remove one adjacent newline if both sides have one to prevent double blank lines
+            if before.endswith('\n') and after.startswith('\n'):
+                before = before.rstrip('\n') + '\n'
+            return before + after
+
         return before + rendered + after
 
     def render(self, template: str, context: dict) -> str:
@@ -70,8 +77,21 @@ class BaseGenerator:
             lambda block, line: block.replace("{{ validation }}", line)
         )
 
+        # ✅ Nuevo loop para enum values ({{ value }} y {{ case }})
+        output = self._render_loop(
+            output,
+            "value",
+            context.get("values", []),
+            lambda block, value: block.replace("{{ value }}", value["value"]).replace("{{ case }}", value["case"]) 
+        )
+
         # Reemplazo de variables simples
         for key, value in context.items():
             if not isinstance(value, list):
                 output = output.replace(f"{{{{ {key} }}}}", str(value))
+
+        # Normalizar saltos de línea múltiples a máximo dos para evitar líneas en blanco extra
+        import re
+        output = re.sub(r"\n{3,}", "\n\n", output)
+
         return output

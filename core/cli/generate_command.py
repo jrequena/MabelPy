@@ -1,4 +1,5 @@
 from core.generator.php_dto_generator import PhpDtoGenerator
+from core.generator.php_enum_generator import PhpEnumGenerator
 from core.contract.parser import ContractParser
 from core.contract.validator import ContractValidator
 
@@ -13,7 +14,14 @@ class GenerateCommand:
         contract = ContractParser().parse(contract_path)
         ContractValidator().validate(contract)
 
-        generator = PhpDtoGenerator(self.config)
         output_dir = self.config.get("output_dir", "generated")
 
+        # Generate enums first
+        if "enums" in contract:
+            enum_gen = PhpEnumGenerator(self.config)
+            for name, enum_def in contract["enums"].items():
+                enum_gen.generate(name, enum_def, output_dir)
+
+        # Then DTOs
+        generator = PhpDtoGenerator(self.config)
         generator.generate(contract, output_dir)

@@ -37,14 +37,48 @@ class PhpDtoGenerator(BaseGenerator):
         self.ENABLE_VALIDATIONS = dto_config.get("validations", True)
 
 
-    def normalize_fields(self, fields: list):
+    def normalize_fields(self, fields: list, namespace: str, enums: dict = None):
         normalized = []
-        imports = set()
+        type_imports = []
+        enum_imports = []
 
         for field in fields:
             raw_type = field["type"]
             nullable = field.get("nullable", False)
 
+            # Enum handling
+            if raw_type == "enum":
+                enum_name = field.get("enum")
+                if not enum_name:
+                    raise ValueError("Enum fields must include 'enum' name")
+
+                if not enums or enum_name not in enums:
+                    raise ValueError(f"Unknown enum referenced: {enum_name}")
+
+                php_type = enum_name
+                if nullable:
+                    php_type = f"?{php_type}"
+
+                field_def = {
+                    "name": field["name"],
+                    "type": php_type,
+                    "is_enum": True,
+                    "enum": enum_name,
+                }
+
+                if "default" in field:
+                    field_def["default"] = field["default"]
+
+                if "validations" in field:
+                    field_def["validations"] = field["validations"]
+
+                normalized.append(field_def)
+
+                enum_imports.append(f"{namespace}\\Enum\\{enum_name}")
+
+                continue
+
+            # Primitive/internal types
             if raw_type not in self.TYPE_MAP:
                 raise ValueError(f"Unsupported PHP type: {raw_type}")
 
@@ -70,14 +104,25 @@ class PhpDtoGenerator(BaseGenerator):
             normalized.append(field_def)
 
             if mapping["import"]:
-                imports.add(mapping["import"])
+                type_imports.append(mapping["import"])
 
-        return normalized, sorted(imports)
+        # dedupe while preserving order
+        def dedup(seq):
+            seen = set()
+            out = []
+            for i in seq:
+                if i not in seen:
+                    seen.add(i)
+                    out.append(i)
+            return out
 
+        return normalized, dedup(type_imports), dedup(enum_imports)
     def generate(self, contract: dict, output_dir: str):
         template = self.load_template("dto.php.tpl")
 
-        fields, imports = self.normalize_fields(contract["fields"])
+        namespace = self.config.get("namespace", "App")
+
+        fields, type_imports, enum_imports = self.normalize_fields(contract["fields"], namespace, contract.get("enums", {}))
 
         promoted_params = []
         modifier = "public readonly" if self.READONLY else "public"
@@ -86,17 +131,33 @@ class PhpDtoGenerator(BaseGenerator):
             param = f"{modifier} {field['type']} ${field['name']}"
 
             if "default" in field:
-                param += " = " + self.format_default(field["default"])
+                if field.get("is_enum"):
+                    param += " = " + self.format_enum_default(field["enum"], field["default"])
+                else:
+                    param += " = " + self.format_default(field["default"])
 
             promoted_params.append(param)
 
         validations = self.generate_validations(contract["fields"])
-        namespace = self.config.get("namespace", "App")
+
+        # Build imports_block cleanly: types first, then enums, with a single blank line between groups
+        parts = []
+        if type_imports:
+            parts.extend([f"use {imp};" for imp in type_imports])
+
+        if enum_imports:
+            if type_imports:
+                parts.append("")  # blank line between types and enums
+            parts.extend([f"use {imp};" for imp in enum_imports])
+
+        imports_block = ""
+        if parts:
+            imports_block = "\n".join(parts) + "\n"  # end with single newline
 
         context = {
             "namespace": namespace,
             "class_name": contract["entity"]["name"] + "Dto",
-            "imports": imports,
+            "imports_block": imports_block,
             "promoted_params": promoted_params,
             "validations": validations,
         }
@@ -119,6 +180,10 @@ class PhpDtoGenerator(BaseGenerator):
         if isinstance(value, str):
             return f'"{value}"'
         return str(value)
+
+    def format_enum_default(self, enum_name: str, value: str):
+        case = value.upper().replace('-', '_').replace(' ', '_')
+        return f"{enum_name}::{case}"
 
     def generate_validations(self, fields: list):
         """Genera líneas PHP de validación para el constructor."""

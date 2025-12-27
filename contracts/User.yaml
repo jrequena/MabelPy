@@ -1,6 +1,14 @@
 entity:
   name: User
 
+enums:
+  UserStatus:
+    type: string
+    values:
+      - active
+      - blocked
+      - deleted
+
 fields:
   - name: id
     type: int
@@ -20,3 +28,8 @@ fields:
   - name: active
     type: bool
     default: true
+
+  - name: status
+    type: enum
+    enum: UserStatus
+    default: active
