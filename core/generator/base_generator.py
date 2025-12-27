@@ -90,8 +90,4 @@ class BaseGenerator:
             if not isinstance(value, list):
                 output = output.replace(f"{{{{ {key} }}}}", str(value))
 
-        # Normalizar saltos de línea múltiples a máximo dos para evitar líneas en blanco extra
-        import re
-        output = re.sub(r"\n{3,}", "\n\n", output)
-
         return output
