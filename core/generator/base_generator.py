@@ -61,6 +61,7 @@ class BaseGenerator:
                         .replace("{{ field.to_array_line }}", str(field.get("to_array_line", "")))
                         .replace("{{ field.raw_name }}", str(field.get("raw_name", "")))
                         .replace("{{ field.sample_value }}", str(field.get("sample_value", "")))
+                        .replace("{{ field.sample_raw_value }}", str(field.get("sample_raw_value", "")))
                     )
                 )
             elif loop_name == "import":
