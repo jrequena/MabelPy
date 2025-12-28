@@ -1,6 +1,49 @@
-namespace: App
-output_dir: generated
+project:
+  name: MabelApp
+  namespace: App
+  framework: zend
+  php_version: "8.2"
 
-dto:
-  readonly: true
-  validations: true
+paths:
+  source_root: src
+  domain: src/Domain
+  application: src/Application
+  infrastructure: src/Infrastructure
+  tests: tests
+  snapshots: tests/snapshots
+
+generators:
+  entity:
+    enabled: true
+    namespace_suffix: Domain
+    immutable: true
+    validations: true
+    
+  value_objects:
+    enabled: true
+    namespace_suffix: Domain
+    auto_types: [Id, Uuid, Email]
+    
+  repository:
+    enabled: true
+    interface_namespace_suffix: Domain/Repository
+    eloquent_namespace_suffix: Infrastructure/Persistence/Eloquent
+    
+  use_case:
+    enabled: true
+    namespace_suffix: Domain/UseCase
+    with_request_response: true
+    
+  mapper:
+    enabled: true
+    namespace_suffix: Infrastructure/Mapper
+    
+  tests:
+    enabled: true
+    framework: phpunit
+    namespace_suffix: Tests
+
+php:
+  strict_types: true
+  declare_strict: true
+  readonly_default: true

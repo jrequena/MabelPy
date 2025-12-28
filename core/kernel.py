@@ -1,9 +1,9 @@
 from core.cli.generate_command import GenerateCommand
-from core.config.loader import ConfigLoader
+from core.config import MabelConfig
 
 class Kernel:
     def run(self, argv):
-        config = ConfigLoader().load()
+        config = MabelConfig.from_file()
 
         command = argv[1] if len(argv) > 1 else None
 
