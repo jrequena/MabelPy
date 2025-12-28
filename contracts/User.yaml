@@ -16,7 +16,7 @@ fields:
       - positive
 
   - name: email
-    type: string
+    type: Email
     nullable: true
     default: null
     validations:
@@ -33,3 +33,12 @@ fields:
     type: enum
     enum: UserStatus
     default: active
+
+use_cases:
+  RegisterUser:
+    input:
+      email: string
+      name: string
+    output:
+      id: int
+      success: bool

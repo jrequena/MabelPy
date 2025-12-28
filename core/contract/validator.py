@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 
 class ContractValidator:
-    PRIMITIVE_TYPES = {"int", "string", "float", "bool", "datetime"}
+    PRIMITIVE_TYPES = {"int", "string", "float", "bool", "datetime", "Email", "Id", "Uuid"}
 
     def validate(self, contract: Dict[str, Any]):
         if not isinstance(contract, dict):
