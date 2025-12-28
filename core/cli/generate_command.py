@@ -5,6 +5,7 @@ from core.generator.php_vo_generator import PhpValueObjectGenerator
 from core.generator.php_repository_generator import PhpRepositoryGenerator
 from core.generator.php_usecase_generator import PhpUseCaseGenerator
 from core.generator.php_mapper_generator import PhpMapperGenerator
+from core.generator.php_test_generator import PhpTestGenerator
 from core.contract.parser import ContractParser
 from core.contract.validator import ContractValidator
 from core.config import MabelConfig
@@ -54,6 +55,10 @@ class GenerateCommand:
             
             # 6. Mappers (Infrastructure)
             PhpMapperGenerator(self.config).generate(contract, output_dir)
+            
+            # 7. Tests
+            if self.config.get("generators.tests.enabled", True):
+                PhpTestGenerator(self.config).generate(contract, output_dir)
             
             print(f"✓ Generation complete for {contract_path}")
             print(f"  Output directory: {output_dir}")
