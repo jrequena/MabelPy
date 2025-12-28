@@ -166,10 +166,14 @@ Conclusión
 
 Mabel deja de ser “una IA que genera código” y se convierte en un motor de construcción de módulos gobernado por contratos, con agentes especializados y arquitectura limpia.
 
-Si quieres, el siguiente paso natural sería:
-Definir el MVP técnico
-Diseñar el primer YAML oficial
-Crear el flujo exacto entre agentes
-Armar el roadmap por versiones
-Dime cómo quieres continuar y avanzamos.
+Próximo paso (MVP)
+
+El MVP técnico está documentado en `MVP.md` y se incluye un contrato de ejemplo en `contracts/UserMVP.yaml`.
+
+Pasos propuestos:
+- Revisa `MVP.md` para criterios de aceptación y sprints.
+- Ejecuta `python -m pytest` para verificar que los generadores y validaciones pasan.
+- Indica si quieres que implemente ahora el `ContractValidator` (recomendado).
+
+Dime cómo quieres que proceda y lo automatizo.
 

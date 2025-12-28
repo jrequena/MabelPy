@@ -1,0 +1,67 @@
+module:
+  name: User
+  namespace: App\Module\User
+  framework: zend
+
+database:
+  driver: mysql
+  orm: eloquent
+  table: users
+
+entities:
+  User:
+    id: int
+    name: string
+    email: string
+    status: UserStatus
+    created_at: datetime
+
+enums:
+  UserStatus:
+    type: string
+    values:
+      - ACTIVE
+      - INACTIVE
+      - PENDING
+
+use_cases:
+  CreateUser:
+    description: "Crear un usuario con validaciones de email y reglas de negocio para estado inicial"
+    input:
+      name: string
+      email: string
+      status?: UserStatus
+    output: User
+    rules:
+      - ensure: email is_unique
+      - ensure: email matches /.+@.+\..+/
+      - set_default: status = ACTIVE
+
+  UpdateUserEmail:
+    description: "Actualizar el email del usuario y validar formato y unicidad"
+    input:
+      id: int
+      email: string
+    output: User
+    rules:
+      - ensure: user_exists
+      - ensure: email matches /.+@.+\..+/
+      - ensure: email is_unique
+
+  DeactivateUser:
+    description: "Marcar usuario como INACTIVE y crear evento de dominio"
+    input:
+      id: int
+    output: User
+    rules:
+      - ensure: user_exists
+      - transition: status -> INACTIVE
+      - emit: UserDeactivatedEvent
+
+services:
+  - UserService
+
+metadata:
+  author: "Mabel Team"
+  version: 0.1.0
+  license: MIT
