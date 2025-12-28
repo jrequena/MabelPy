@@ -17,75 +17,75 @@ class BaseGenerator:
         if start_tag not in template:
             return template
 
-        before, rest = template.split(start_tag, 1)
-        loop_block, after = rest.split(end_tag, 1)
-
-        rendered = ""
-        for item in items:
-            rendered += render_item(loop_block, item)
-
-        # If loop had no items, avoid leaving extra blank lines from the template block
-        if rendered == "":
-            # remove one adjacent newline if both sides have one to prevent double blank lines
-            if before.endswith('\n') and after.startswith('\n'):
-                before = before.rstrip('\n') + '\n'
-            return before + after
-
-        return before + rendered + after
+        # Split and process all occurrences of the loop
+        parts = template.split(start_tag)
+        new_template = parts[0]
+        
+        for part in parts[1:]:
+            if end_tag not in part:
+                # Should not happen in well-formed template
+                new_template += start_tag + part
+                continue
+                
+            loop_block, rest = part.split(end_tag, 1)
+            
+            rendered = ""
+            for item in items:
+                rendered += render_item(loop_block, item)
+            
+            if rendered == "" and new_template.endswith('\n') and rest.startswith('\n'):
+                 new_template = new_template.rstrip('\n') + '\n'
+                 rest = rest.lstrip('\n')
+                 
+            new_template += rendered + rest
+            
+        return new_template
 
     def render(self, template: str, context: dict) -> str:
         output = template
 
-        # Simple replacements
         for key, value in context.items():
             if isinstance(value, str):
                 output = output.replace(f"{{{{ {key} }}}}", value)
 
-        # Imports loop
-        output = self._render_loop(
-            output,
-            "import",
-            context.get("imports", []),
-            lambda block, imp: block.replace("{{ import }}", imp)
-        )
+        # Standard loops
+        for loop_name in ["import", "field", "promoted_param", "validation", "value"]:
+            if loop_name == "field":
+                output = self._render_loop(
+                    output,
+                    "field",
+                    context.get("fields", []),
+                    lambda block, field: (
+                        block
+                        .replace("{{ field.type }}", str(field.get("type", "")))
+                        .replace("{{ field.name }}", str(field.get("name", "")))
+                        .replace("{{ field.from_array_line }}", str(field.get("from_array_line", "")))
+                        .replace("{{ field.to_array_line }}", str(field.get("to_array_line", "")))
+                        .replace("{{ field.raw_name }}", str(field.get("raw_name", "")))
+                    )
+                )
+            elif loop_name == "import":
+                output = self._render_loop(
+                    output, "import", context.get("imports", []),
+                    lambda block, imp: block.replace("{{ import }}", str(imp))
+                )
+            elif loop_name == "promoted_param":
+                output = self._render_loop(
+                    output, "promoted_param", context.get("promoted_params", []),
+                    lambda block, param: block.replace("{{ promoted_param }}", str(param))
+                )
+            elif loop_name == "validation":
+                output = self._render_loop(
+                    output, "validation", context.get("validations", []),
+                    lambda block, line: block.replace("{{ validation }}", str(line))
+                )
+            elif loop_name == "value":
+                output = self._render_loop(
+                    output, "value", context.get("values", []),
+                    lambda block, value: block.replace("{{ value }}", str(value["value"])).replace("{{ case }}", str(value["case"]))
+                )
 
-        # Fields loop
-        output = self._render_loop(
-            output,
-            "field",
-            context.get("fields", []),
-            lambda block, field: (
-                block
-                .replace("{{ field.type }}", field["type"])
-                .replace("{{ field.name }}", field["name"])
-            )
-        )
-
-        # Promoted params loop
-        output = self._render_loop(
-            output,
-            "promoted_param",
-            context.get("promoted_params", []),
-            lambda block, param: block.replace("{{ promoted_param }}", param)
-        )
-
-        # ✅ Nuevo loop para validaciones
-        output = self._render_loop(
-            output,
-            "validation",
-            context.get("validations", []),
-            lambda block, line: block.replace("{{ validation }}", line)
-        )
-
-        # ✅ Nuevo loop para enum values ({{ value }} y {{ case }})
-        output = self._render_loop(
-            output,
-            "value",
-            context.get("values", []),
-            lambda block, value: block.replace("{{ value }}", value["value"]).replace("{{ case }}", value["case"]) 
-        )
-
-        # Reemplazo de variables simples
+        # Final simple replacements
         for key, value in context.items():
             if not isinstance(value, list):
                 output = output.replace(f"{{{{ {key} }}}}", str(value))
