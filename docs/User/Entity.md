@@ -11,3 +11,4 @@ Core domain entity for User.
 | email | string | No | None | No description provided. |
 | status | UserStatus | No | None | No description provided. |
 | created_at | datetime | No | None | No description provided. |
+| posts | Collection<Post> | No | None | No description provided. |

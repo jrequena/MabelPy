@@ -8,6 +8,7 @@ from core.generator.php_usecase_generator import PhpUseCaseGenerator
 from core.generator.php_mapper_generator import PhpMapperGenerator
 from core.generator.php_test_generator import PhpTestGenerator
 from core.generator.php_doc_generator import PhpDocGenerator
+from core.generator.php_migration_generator import PhpMigrationGenerator
 from core.contract.parser import ContractParser
 from core.contract.validator import ContractValidator
 from core.config import MabelConfig
@@ -113,6 +114,7 @@ class GenerateCommand:
                     doc_gen.generate(entity_contract, output_dir)
             
             # Record metadata
+            PhpMigrationGenerator(self.config).generate(contract, output_dir)
             MetadataManager(output_dir).record_generation(Path(contract_path))
 
             print(f"✓ Generation complete for {contract_path}")

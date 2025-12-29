@@ -12,17 +12,11 @@ class PhpDocGenerator(BaseGenerator):
             return
 
         doc_root = Path(self.config.get("paths.docs", "docs")).absolute()
-        
-        # contract might contain multiple entities now. 
-        # But GenerateCommand calls it per entity for compatibility.
         entity_name = contract["entity"]["name"]
         entity_doc_dir = doc_root / entity_name
         entity_doc_dir.mkdir(parents=True, exist_ok=True)
 
-        # 1. Entity Documentation
         self._generate_entity_doc(contract, entity_doc_dir)
-
-        # 2. Use Case Documentation (actual from contract)
         self._generate_use_case_docs(contract, entity_doc_dir)
 
     def _generate_entity_doc(self, contract: dict, target_dir: Path):
@@ -30,10 +24,15 @@ class PhpDocGenerator(BaseGenerator):
         
         fields_data = []
         for f in contract.get("fields", []):
+            f_type = f.get("type", "")
+            if "has_many" in f: f_type = f"Collection<{f['has_many']}>"
+            elif "belongs_to" in f: f_type = f"Relationship(BelongsTo {f['belongs_to']})"
+            elif "has_one" in f: f_type = f"Relationship(HasOne {f['has_one']})"
+
             fields_data.append({
                 "name": f["name"],
-                "type": f["type"],
-                "nullable": "Yes" if f.get("nullable") else "No",
+                "type": f_type,
+                "nullable": "Yes" if f.get("nullable") or "belongs_to" in f or "has_one" in f else "No",
                 "validation": ", ".join(f.get("validations", [])) if f.get("validations") else "None",
                 "description": f.get("description", "No description provided.")
             })
@@ -51,18 +50,8 @@ class PhpDocGenerator(BaseGenerator):
         template = self.load_template("use_case_doc.md.tpl")
         entity_name = contract["entity"]["name"]
         
-        # In current GenerateCommand flow, 'contract' here is a sub-contract for one entity.
-        # But top-level use cases are not easily visible here unless we passed the whole contract.
-        # However, the contract passed in generate_command.py:108 has 'enums'.
-        # Let's check how it's called.
-        
-        # If we want to be dynamic, we need the use cases.
-        # Looking at generate_command.py, the use_cases are not passed to this per-entity call.
-        # I'll need to fix this in GenerateCommand later or handle it here if available.
-        
         use_cases = contract.get("use_cases", {})
         for uc_name, uc_def in use_cases.items():
-            # Only document if it belongs to this entity
             if uc_def.get("entity", entity_name) != entity_name:
                 continue
                 

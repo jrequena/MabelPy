@@ -9,49 +9,34 @@ class PhpTestGenerator(BaseGenerator):
 
     def generate(self, contract: dict, output_dir: Path):
         entity_name = contract["entity"]["name"]
-        
-        # 1. Entity Test
         self._generate_entity_test(contract)
-        
-        # 2. Value Object Tests
         self._generate_vo_tests(contract)
-        
-        # 3. Mapper Test
         self._generate_mapper_test(contract)
-        
-        # 4. Use Case Tests
         self._generate_use_case_tests(contract)
 
     def _generate_entity_test(self, contract: dict):
         template = self.load_template("test_entity.php.tpl")
         entity_name = contract["entity"]["name"]
         base_ns = self.config.project_namespace
-        
         test_config = self.config.get_generator_config("tests")
         test_suffix = test_config.get("namespace_suffix", "Tests")
         namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}"
-        
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         entity_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}"
-        
         fields_data = self._prepare_fields(contract["fields"], entity_ns, contract.get("enums", {}))
-        
         imports = [f"{entity_ns}\\{entity_name}"]
         for f in fields_data:
             if f.get("import"):
                 imports.append(f["import"])
-
-        imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports)))])
+        imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports))) if imp])
         if imports_block:
             imports_block += "\n"
-
         context = {
             "namespace": namespace,
             "class_name": entity_name,
             "imports_block": imports_block,
             "fields": fields_data
         }
-        
         content = self.render(template, context)
         self._write_test_file(entity_name, f"{entity_name}Test.php", content)
 
@@ -60,22 +45,18 @@ class PhpTestGenerator(BaseGenerator):
         base_ns = self.config.project_namespace
         test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
         namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}"
-        
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         vo_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}\\ValueObject"
-        
         auto_types = self.config.get("generators.value_objects.auto_types", [])
         generated_vos = set()
-        
         for field in contract.get("fields", []):
-            vo_name = field["type"]
-            if vo_name in auto_types and vo_name not in generated_vos:
+            vo_name = field.get("type")
+            if vo_name and vo_name in auto_types and vo_name not in generated_vos:
                 sample_value = "'sample'"
                 if vo_name == "Email":
                     sample_value = "'test@example.com'"
                 elif vo_name in ["Id", "Uuid"]:
                     sample_value = "'123e4567-e89b-12d3-a456-426614174000'"
-                
                 context = {
                     "namespace": namespace,
                     "class_name": vo_name,
@@ -90,32 +71,20 @@ class PhpTestGenerator(BaseGenerator):
         template = self.load_template("test_mapper.php.tpl")
         entity_name = contract["entity"]["name"]
         base_ns = self.config.project_namespace
-        
-        test_config = self.config.get_generator_config("tests")
-        test_suffix = test_config.get("namespace_suffix", "Tests")
+        test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
         namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}"
-        
-        mapper_config = self.config.get_generator_config("mapper")
-        mapper_suffix = mapper_config.get("namespace_suffix", "Infrastructure/Mapper")
+        mapper_suffix = self.config.get_generator_config("mapper").get("namespace_suffix", "Infrastructure/Mapper")
         mapper_ns = f"{base_ns}\\{mapper_suffix.replace('/', '\\')}"
-        
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         entity_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}"
-        
         fields_data = self._prepare_fields_for_mapper(contract["fields"], entity_ns)
-        
-        imports = [
-            f"{entity_ns}\\{entity_name}",
-            f"{mapper_ns}\\{entity_name}Mapper"
-        ]
+        imports = [f"{entity_ns}\\{entity_name}", f"{mapper_ns}\\{entity_name}Mapper"]
         for f in fields_data:
             if f.get("import"):
                 imports.append(f["import"])
-
-        imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports)))])
+        imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports))) if imp])
         if imports_block:
             imports_block += "\n"
-
         context = {
             "namespace": namespace,
             "class_name": f"{entity_name}Mapper",
@@ -123,7 +92,6 @@ class PhpTestGenerator(BaseGenerator):
             "imports_block": imports_block,
             "fields": fields_data
         }
-        
         content = self.render(template, context)
         self._write_test_file(entity_name, f"{entity_name}MapperTest.php", content)
 
@@ -131,28 +99,19 @@ class PhpTestGenerator(BaseGenerator):
         template = self.load_template("test_use_case.php.tpl")
         entity_name = contract["entity"]["name"]
         base_ns = self.config.project_namespace
-        
-        test_config = self.config.get_generator_config("tests")
-        test_suffix = test_config.get("namespace_suffix", "Tests")
+        test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
         namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}"
-        
         use_case_suffix = self.config.get_generator_config("use_case").get("namespace_suffix", "Domain/UseCase")
         use_case_ns = f"{base_ns}\\{use_case_suffix.replace('/', '\\')}"
-        
         repo_suffix = self.config.get_generator_config("repository").get("interface_namespace_suffix", "Domain/Repository")
         repo_ns = f"{base_ns}\\{repo_suffix.replace('/', '\\')}"
-        
         use_cases = ["Create", "Update", "Get", "Delete", "List"]
         for uc in use_cases:
             class_name = f"{uc}{entity_name}"
-            imports = [
-                f"{use_case_ns}\\{class_name}",
-                f"{repo_ns}\\{entity_name}Repository"
-            ]
+            imports = [f"{use_case_ns}\\{class_name}", f"{repo_ns}\\{entity_name}Repository"]
             imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports)))])
             if imports_block:
                 imports_block += "\n"
-
             context = {
                 "namespace": namespace,
                 "class_name": class_name,
@@ -172,38 +131,29 @@ class PhpTestGenerator(BaseGenerator):
     def _prepare_fields_for_mapper(self, fields: list, domain_ns: str):
         prepared = []
         auto_vos = self.config.get("generators.value_objects.auto_types", [])
-        
         for field in fields:
             name = field["name"]
-            raw_type = field["type"]
-            
-            f_data = {
-                "raw_name": name,
-                "import": None
-            }
-
-            if raw_type == "enum":
-                enum_name = field["enum"]
+            raw_type = field.get("type")
+            f_data = {"raw_name": name, "import": None}
+            if "has_many" in field:
+                f_data["sample_value"] = "[]"
+                f_data["sample_raw_value"] = "[]"
+            elif "belongs_to" in field or "has_one" in field:
+                f_data["sample_value"] = "null"
+                f_data["sample_raw_value"] = "null"
+            elif raw_type == "enum":
+                enum_name = field.get("enum") or raw_type
                 f_data["import"] = f"{domain_ns}\\Enum\\{enum_name}"
                 f_data["sample_value"] = f"{enum_name}::ACTIVE"
                 f_data["sample_raw_value"] = "'ACTIVE'"
-            
             elif raw_type in auto_vos:
                 f_data["import"] = f"{domain_ns}\\ValueObject\\{raw_type}"
-                if raw_type == "Email":
-                    f_data["sample_value"] = f"new Email('test@example.com')"
-                    f_data["sample_raw_value"] = "'test@example.com'"
-                elif raw_type in ["Id", "Uuid"]:
-                    f_data["sample_value"] = f"new {raw_type}('123e4567-e89b-12d3-a456-426614174000')"
-                    f_data["sample_raw_value"] = "'123e4567-e89b-12d3-a456-426614174000'"
-                else:
-                    f_data["sample_value"] = f"new {raw_type}('sample')"
-                    f_data["sample_raw_value"] = "'sample'"
-            
+                val = "'test@example.com'" if raw_type == "Email" else "'sample'"
+                f_data["sample_value"] = f"new {raw_type}({val})"
+                f_data["sample_raw_value"] = val
             elif raw_type == "datetime":
-                f_data["sample_value"] = f"new \\DateTimeImmutable('2023-01-01 00:00:00')"
+                f_data["sample_value"] = "new \\DateTimeImmutable('2023-01-01 00:00:00')"
                 f_data["sample_raw_value"] = "'2023-01-01T00:00:00+00:00'"
-            
             elif raw_type == "int":
                 f_data["sample_value"] = "1"
                 f_data["sample_raw_value"] = "1"
@@ -216,39 +166,30 @@ class PhpTestGenerator(BaseGenerator):
             else:
                 f_data["sample_value"] = "null"
                 f_data["sample_raw_value"] = "null"
-                
             prepared.append(f_data)
-            
         return prepared
 
     def _prepare_fields(self, fields: list, domain_ns: str, enums: dict):
         prepared = []
         auto_vos = self.config.get("generators.value_objects.auto_types", [])
-        
         for field in fields:
             name = field["name"]
-            raw_type = field["type"]
-            
-            f_data = {
-                "name": name,
-                "import": None
-            }
-
-            if raw_type == "enum":
-                enum_name = field["enum"]
+            raw_type = field.get("type")
+            f_data = {"name": name, "import": None}
+            if "has_many" in field:
+                f_data["sample_value"] = "[]"
+            elif "belongs_to" in field or "has_one" in field:
+                f_data["sample_value"] = "null"
+            elif raw_type == "enum":
+                enum_name = field.get("enum") or raw_type
                 f_data["import"] = f"{domain_ns}\\Enum\\{enum_name}"
                 f_data["sample_value"] = f"{enum_name}::ACTIVE"
-            
             elif raw_type in auto_vos:
                 f_data["import"] = f"{domain_ns}\\ValueObject\\{raw_type}"
-                if raw_type == "Email":
-                    f_data["sample_value"] = f"new Email('test@example.com')"
-                else:
-                    f_data["sample_value"] = f"new {raw_type}('sample')"
-            
+                val = "'test@example.com'" if raw_type == "Email" else "'sample'"
+                f_data["sample_value"] = f"new {raw_type}({val})"
             elif raw_type == "datetime":
-                f_data["sample_value"] = f"new \\DateTimeImmutable()"
-            
+                f_data["sample_value"] = "new \\DateTimeImmutable()"
             elif raw_type == "int":
                 f_data["sample_value"] = "1"
             elif raw_type == "string":
@@ -257,7 +198,5 @@ class PhpTestGenerator(BaseGenerator):
                 f_data["sample_value"] = "true"
             else:
                 f_data["sample_value"] = "null"
-                
             prepared.append(f_data)
-            
         return prepared

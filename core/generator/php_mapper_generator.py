@@ -27,7 +27,7 @@ class PhpMapperGenerator(BaseGenerator):
             if f.get("import"):
                 imports.append(f["import"])
 
-        imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports)))])
+        imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports))) if imp])
         if imports_block:
             imports_block += "\n"
 
@@ -39,13 +39,12 @@ class PhpMapperGenerator(BaseGenerator):
             "fields": fields_data
         }
         
+        # BaseGenerator expects some keys for legacy loop emulation if still used
         for f in fields_data:
-            f["type"] = ""
-            f["name"] = f["raw_name"]
+             f["name"] = f["raw_name"]
 
         content = self.render(template, context)
         
-        # Fixed: Use output_dir directly which is 'src'
         target_dir = output_dir / mapper_suffix
         target_dir.mkdir(parents=True, exist_ok=True)
         
@@ -59,7 +58,7 @@ class PhpMapperGenerator(BaseGenerator):
         
         for field in fields:
             name = field["name"]
-            raw_type = field["type"]
+            raw_type = field.get("type")
             nullable = field.get("nullable", False)
             
             f_data = {
@@ -67,8 +66,24 @@ class PhpMapperGenerator(BaseGenerator):
                 "import": None
             }
 
-            if raw_type == "enum":
-                enum_name = field["enum"]
+            # Handle Relationships
+            if "has_many" in field:
+                 f_data["from_array_line"] = f"[] // TODO: Map collection {field['has_many']}"
+                 f_data["to_array_line"] = f"[] // TODO: Map collection {field['has_many']}"
+                 prepared.append(f_data)
+                 continue
+
+            if "belongs_to" in field or "has_one" in field:
+                 target = field.get("belongs_to") or field.get("has_one")
+                 f_data["from_array_line"] = f"null // TODO: Map relation {target}"
+                 f_data["to_array_line"] = f"null // TODO: Map relation {target}"
+                 prepared.append(f_data)
+                 continue
+
+            if not raw_type: continue
+
+            if raw_type == "enum" or raw_type in enums:
+                enum_name = field.get("enum") or raw_type
                 f_data["import"] = f"{domain_ns}\\Enum\\{enum_name}"
                 if nullable:
                     f_data["from_array_line"] = f"isset($data['{name}']) ? {enum_name}::from($data['{name}']) : null"
@@ -95,7 +110,7 @@ class PhpMapperGenerator(BaseGenerator):
                     f_data["to_array_line"] = f"$entity->{name}->format(\\DateTimeInterface::ATOM)"
             
             else:
-                f_data["from_array_line"] = f"$data['{name}']"
+                f_data["from_array_line"] = f"$data['{name}'] ?? null"
                 f_data["to_array_line"] = f"$entity->{name}"
                 
             prepared.append(f_data)

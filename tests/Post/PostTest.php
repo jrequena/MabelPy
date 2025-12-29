@@ -5,22 +5,20 @@ declare(strict_types=1);
 namespace App\Tests;
 
 use PHPUnit\Framework\TestCase;
-use App\Domain\User;
+use App\Domain\Post;
 
 
-final class UserTest extends TestCase
+final class PostTest extends TestCase
 {
     public function test_can_be_instantiated(): void
     {
-        $entity = new User(
+        $entity = new Post(
             1,
             'sample',
             'sample',
             null,
-            new \DateTimeImmutable(),
-            [],
         );
 
-        $this->assertInstanceOf(User::class, $entity);
+        $this->assertInstanceOf(Post::class, $entity);
     }
 }

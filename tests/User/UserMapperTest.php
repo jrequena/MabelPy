@@ -18,6 +18,7 @@ final class UserMapperTest extends TestCase
             'email' => 'sample',
             'status' => null,
             'created_at' => '2023-01-01T00:00:00+00:00',
+            'posts' => [],
         ];
 
         $entity = UserMapper::fromArray($data);
@@ -33,6 +34,7 @@ final class UserMapperTest extends TestCase
             'sample',
             null,
             new \DateTimeImmutable('2023-01-01 00:00:00'),
+            [],
         );
 
         $data = UserMapper::toArray($entity);
@@ -42,5 +44,6 @@ final class UserMapperTest extends TestCase
         $this->assertEquals('sample', $data['email']);
         $this->assertEquals(null, $data['status']);
         $this->assertEquals('2023-01-01T00:00:00+00:00', $data['created_at']);
+        $this->assertEquals([], $data['posts']);
     }
 }

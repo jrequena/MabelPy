@@ -9,7 +9,7 @@ class ContractValidator:
         if not isinstance(contract, dict):
             raise ValueError("Contract must be a mapping/dictionary")
 
-        # Module (optional) — allow legacy top-level 'entity' format
+        # Module (optional)
         module = contract.get("module")
         if module is not None:
             if not isinstance(module, dict):
@@ -34,57 +34,44 @@ class ContractValidator:
                     if not isinstance(v, str) or not v:
                         raise ValueError(f"Enum '{name}' has an invalid value: {v}")
 
-        # Entities: support either 'entities' mapping or legacy 'entity' + top-level 'fields' list
+        # Entities
         entities = contract.get("entities")
         if entities is None:
-            # legacy format: top-level 'entity' with name and top-level 'fields' list
-            if "entity" in contract and isinstance(contract["entity"], dict) and "name" in contract["entity"] and "fields" in contract:
-                fields_list = contract["fields"]
-                if not isinstance(fields_list, list):
-                    raise ValueError("'fields' must be a list in legacy entity format")
-                # Convert list to mapping: field_name -> type or dict
-                field_map = {}
-                for f in fields_list:
-                    if not isinstance(f, dict) or "name" not in f or "type" not in f:
-                        raise ValueError("Each field must be a mapping with 'name' and 'type' in legacy format")
-                    fname = f["name"]
-                    # prepare definition: either simple type string or dict with details (without 'name')
-                    if set(f.keys()) == {"name", "type"}:
-                        field_map[fname] = f["type"]
-                    else:
-                        fd = dict(f)
-                        fd.pop("name", None)
-                        field_map[fname] = fd
-                entities = {contract["entity"]["name"]: field_map}
-            else:
-                raise ValueError("Contract must define 'entities' as a mapping of name -> fields")
+             raise ValueError("Contract must define 'entities' as a mapping of name -> fields")
 
         for entity_name, fields in entities.items():
             if not isinstance(fields, dict):
                 raise ValueError(f"Entity '{entity_name}' must define fields as a mapping")
             for field_name, field_def in fields.items():
-                # field_def can be a simple type string or a mapping with details
                 if isinstance(field_def, str):
                     self._validate_type_reference(field_def, enums, entities, entity_name, field_name)
                 elif isinstance(field_def, dict):
+                    # Check for relationship
+                    rel_type = None
+                    if "belongs_to" in field_def: rel_type = "belongs_to"
+                    elif "has_many" in field_def: rel_type = "has_many"
+                    elif "has_one" in field_def: rel_type = "has_one"
+                    
+                    if rel_type:
+                        target = field_def[rel_type]
+                        if target not in entities:
+                            raise ValueError(f"Relationship '{rel_type}' in '{entity_name}.{field_name}' references unknown entity '{target}'")
+                        continue
+
                     if "type" not in field_def:
                         raise ValueError(f"Field '{field_name}' in '{entity_name}' must specify 'type'")
                     ftype = field_def["type"]
-                    # Legacy enum form: {type: enum, enum: EnumName}
                     if ftype == "enum":
                         enum_name = field_def.get("enum")
-                        if not enum_name:
-                            raise ValueError(f"Enum field '{field_name}' in '{entity_name}' must include 'enum' name")
-                        if enum_name not in enums:
+                        if not enum_name or enum_name not in enums:
                             raise ValueError(f"Field '{field_name}' references undefined enum '{enum_name}'")
                     else:
                         self._validate_type_reference(ftype, enums, entities, entity_name, field_name)
-                    # constraints
                     self._validate_constraints(field_def, entity_name, field_name)
                 else:
                     raise ValueError(f"Invalid definition for field '{field_name}' in '{entity_name}'")
 
-        # Use cases (optional)
+        # Use cases
         use_cases = contract.get("use_cases", {})
         if use_cases is not None:
             if not isinstance(use_cases, dict):
@@ -93,18 +80,15 @@ class ContractValidator:
                 if not isinstance(uc_def, dict):
                     raise ValueError(f"Use case '{uc_name}' must be a mapping")
                 
-                # Validate input types
                 inputs = uc_def.get("input", {})
                 if not isinstance(inputs, dict):
                     raise ValueError(f"Use case '{uc_name}' input must be a mapping")
                 for in_name, in_type in inputs.items():
                     if isinstance(in_type, str):
-                        # Handle optional marker in type
                         self._validate_type_reference(in_type.replace("?", ""), enums, entities, f"use_case:{uc_name}", in_name)
                     else:
                         raise ValueError(f"Invalid input type for '{in_name}' in use case '{uc_name}'")
 
-                # Validate output
                 output = uc_def.get("output")
                 if output:
                     if isinstance(output, str):
@@ -118,7 +102,6 @@ class ContractValidator:
                     else:
                         raise ValueError(f"Invalid output definition for use case '{uc_name}'")
 
-                # Validate rules
                 rules = uc_def.get("rules", [])
                 if not isinstance(rules, list):
                     raise ValueError(f"Rules for use case '{uc_name}' must be a list")
@@ -130,18 +113,15 @@ class ContractValidator:
                         raise ValueError(f"Unknown rule type '{rule_type}' in use case '{uc_name}'")
 
     def _validate_type_reference(self, type_name: str, enums: Dict[str, Any], entities: Dict[str, Any], ctx_entity: str, ctx_field: str):
-        # allow optional marker like "status?"? Not supported here; treat as exact
         if type_name in self.PRIMITIVE_TYPES:
             return
         if type_name in enums:
             return
         if type_name in entities:
             return
-        # unknown type
         raise ValueError(f"Unknown type referenced for '{ctx_field}' in '{ctx_entity}': {type_name}")
 
     def _validate_constraints(self, field_def: Dict[str, Any], entity_name: str, field_name: str):
-        # Validate common constraint keys if present
         if "min" in field_def and not isinstance(field_def["min"], (int, float)):
             raise ValueError(f"Constraint 'min' for '{field_name}' in '{entity_name}' must be numeric")
         if "max" in field_def and not isinstance(field_def["max"], (int, float)):

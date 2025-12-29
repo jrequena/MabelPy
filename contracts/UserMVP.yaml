@@ -15,6 +15,15 @@ entities:
     email: string
     status: UserStatus
     created_at: datetime
+    posts:
+      has_many: Post
+
+  Post:
+    id: int
+    title: string
+    content: string
+    user:
+      belongs_to: User
 
 enums:
   UserStatus:

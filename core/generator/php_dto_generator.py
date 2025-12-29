@@ -42,6 +42,8 @@ class PhpDtoGenerator(BaseGenerator):
                     param += " = " + self._format_default(field["default"])
             elif field.get("nullable"):
                 param += " = null"
+            elif field.get("is_collection"):
+                param += " = []"
                 
             promoted_params.append(param)
 
@@ -85,7 +87,40 @@ class PhpDtoGenerator(BaseGenerator):
         auto_vos = self.config.get("generators.value_objects.auto_types", [])
 
         for field in fields:
-            raw_type = field["type"]
+            # Handle Relationships
+            if "has_many" in field:
+                target = field["has_many"]
+                normalized.append({
+                    "name": field["name"],
+                    "type": "array",
+                    "is_collection": True,
+                    "target": target
+                })
+                # We could add PHPDoc for type hinting later
+                continue
+            
+            if "belongs_to" in field:
+                target = field["belongs_to"]
+                normalized.append({
+                    "name": field["name"],
+                    "type": target,
+                    "nullable": field.get("nullable", True)
+                })
+                continue
+
+            if "has_one" in field:
+                target = field["has_one"]
+                normalized.append({
+                    "name": field["name"],
+                    "type": target,
+                    "nullable": field.get("nullable", True)
+                })
+                continue
+
+            # Standard Fields
+            raw_type = field.get("type")
+            if not raw_type: continue # Safety for malformed
+            
             nullable = field.get("nullable", False)
 
             if raw_type == "enum" or raw_type in enums:
@@ -145,14 +180,16 @@ class PhpDtoGenerator(BaseGenerator):
     def _generate_validations(self, fields: list):
         validations = []
         for field in fields:
-            name = field["name"]
+            name = field.get("name")
+            if not name: continue
             rules = field.get("validations", [])
             nullable = field.get("nullable", False)
+            ftype = field.get("type")
             for rule in rules:
-                if rule == "positive" and field["type"] == "int":
+                if rule == "positive" and ftype == "int":
                     cond = f"${name} <= 0" if not nullable else f"${name} !== null && ${name} <= 0"
                     validations.append(f'if ({cond}) {{ throw new \\InvalidArgumentException("{name} must be positive"); }}')
-                elif rule == "email" and field["type"] == "string":
+                elif rule == "email" and ftype == "string":
                     cond = f"!filter_var(${name}, FILTER_VALIDATE_EMAIL)" if not nullable else f"${name} !== null && !filter_var(${name}, FILTER_VALIDATE_EMAIL)"
                     validations.append(f'if ({cond}) {{ throw new \\InvalidArgumentException("{name} must be a valid email"); }}')
         return validations
