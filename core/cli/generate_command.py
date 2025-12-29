@@ -9,6 +9,11 @@ from core.generator.php_mapper_generator import PhpMapperGenerator
 from core.generator.php_test_generator import PhpTestGenerator
 from core.generator.php_doc_generator import PhpDocGenerator
 from core.generator.php_migration_generator import PhpMigrationGenerator
+from core.generator.php_eloquent_model_generator import PhpEloquentModelGenerator
+from core.generator.php_eloquent_repository_generator import PhpEloquentRepositoryGenerator
+from core.generator.php_service_provider_generator import PhpServiceProviderGenerator
+from core.generator.php_factory_generator import PhpFactoryGenerator
+from core.generator.php_seeder_generator import PhpSeederGenerator
 from core.contract.parser import ContractParser
 from core.contract.validator import ContractValidator
 from core.config import MabelConfig
@@ -65,7 +70,8 @@ class GenerateCommand:
                 entity_contract = {
                     "entity": {"name": entity_name},
                     "fields": self._normalize_fields_to_list(fields),
-                    "enums": contract.get("enums", {}), "use_cases": contract.get("use_cases", {})
+                    "enums": contract.get("enums", {}),
+                    "use_cases": contract.get("use_cases", {})
                 }
                 dto_gen.generate(entity_contract, output_dir)
             
@@ -87,34 +93,46 @@ class GenerateCommand:
                 entity_contract = {
                     "entity": {"name": entity_name},
                     "fields": self._normalize_fields_to_list(fields),
-                    "enums": contract.get("enums", {}), "use_cases": contract.get("use_cases", {})
+                    "enums": contract.get("enums", {}),
+                    "use_cases": contract.get("use_cases", {})
                 }
                 mapper_gen.generate(entity_contract, output_dir)
+
+            # 7. Eloquent Models & Repositories
+            PhpEloquentModelGenerator(self.config).generate(contract, output_dir)
+            PhpEloquentRepositoryGenerator(self.config).generate(contract, output_dir)
+            PhpServiceProviderGenerator(self.config).generate(contract, output_dir)
             
-            # 7. Tests
+            # 8. Database (Migrations, Factories, Seeders)
+            PhpMigrationGenerator(self.config).generate(contract, output_dir)
+            PhpFactoryGenerator(self.config).generate(contract, output_dir)
+            PhpSeederGenerator(self.config).generate(contract, output_dir)
+
+            # 9. Tests
             if self.config.get("generators.tests.enabled", True):
                 test_gen = PhpTestGenerator(self.config)
                 for entity_name, fields in contract.get("entities", {}).items():
                     entity_contract = {
                         "entity": {"name": entity_name},
                         "fields": self._normalize_fields_to_list(fields),
-                        "enums": contract.get("enums", {}), "use_cases": contract.get("use_cases", {})
+                        "enums": contract.get("enums", {}),
+                        "use_cases": contract.get("use_cases", {})
                     }
                     test_gen.generate(entity_contract, output_dir)
             
-            # 8. Documentation
+            # 10. Documentation
             if self.config.get("generators.documentation.enabled", True):
                 doc_gen = PhpDocGenerator(self.config)
                 for entity_name, fields in contract.get("entities", {}).items():
                     entity_contract = {
                         "entity": {"name": entity_name},
                         "fields": self._normalize_fields_to_list(fields),
-                        "enums": contract.get("enums", {}), "use_cases": contract.get("use_cases", {})
+                        "enums": contract.get("enums", {}),
+                        "use_cases": contract.get("use_cases", {})
                     }
                     doc_gen.generate(entity_contract, output_dir)
             
             # Record metadata
-            PhpMigrationGenerator(self.config).generate(contract, output_dir)
             MetadataManager(output_dir).record_generation(Path(contract_path))
 
             print(f"✓ Generation complete for {contract_path}")

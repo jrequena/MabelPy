@@ -268,3 +268,19 @@ Asume que el proyecto ya funciona
 
 👉 Comienza preguntándome qué feature quiero implementar a continuación.
 
+
+2. Siguientes Fases Propuestas
+Fase 4: Implementación de Infraestructura Real
+Eloquent Repositories: Pasar de interfaces vacías a implementaciones concretas que utilicen modelos de Laravel.
+Dependency Injection Auto-wire: Generar proveedores de servicios (ServiceProvider) para registrar automáticamente las interfaces de los repositorios con sus implementaciones.
+Factories y Seeders: Generar clases Factory para pruebas de integración basadas en los tipos de datos del contrato.
+Fase 5: API y Capa de Entrada
+Controller Generator: Generar controladores de API que utilicen los Use Cases inyectados.
+Request Validation: Generar clases FormRequest de Laravel basadas en los inputs de los Use Cases y las restricciones de las entidades.
+OpenAPI/Swagger: Generación automática de especificaciones openapi.yaml para documentar la API generada.
+Fase 6: Eventos y Comunicación
+Domain Events: Implementar la generación de clases de eventos cuando se detecta la regla emit en un caso de uso.
+Integration Events: Soporte para definir mensajes de RabbitMQ/Kafka en el contrato para comunicación entre módulos.
+Fase 7: Consolidación de Herramientas (DX)
+Mabel Watch: Un comando que vigile cambios en los archivos .yaml y re-genere el código en tiempo real.
+Interactive CLI: Un asistente para crear contratos YAML mediante preguntas en la terminal.
