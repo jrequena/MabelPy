@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Tests;
 
 use PHPUnit\Framework\TestCase;
-use App\Domain\Enum\UserStatus;
 use App\Domain\User;
-use App\Domain\ValueObject\Email;
 use App\Infrastructure\Mapper\UserMapper;
 
 final class UserMapperTest extends TestCase
@@ -18,13 +16,13 @@ final class UserMapperTest extends TestCase
 
             'id' => 1,
 
-            'email' => 'test@example.com',
+            'name' => 'sample',
+
+            'email' => 'sample',
+
+            'status' => null,
 
             'created_at' => '2023-01-01T00:00:00+00:00',
-
-            'active' => true,
-
-            'status' => 'ACTIVE',
 
         ];
 
@@ -39,13 +37,13 @@ final class UserMapperTest extends TestCase
 
             1,
 
-            new Email('test@example.com'),
+            'sample',
+
+            'sample',
+
+            null,
 
             new \DateTimeImmutable('2023-01-01 00:00:00'),
-
-            true,
-
-            UserStatus::ACTIVE,
 
         );
 
@@ -54,13 +52,13 @@ final class UserMapperTest extends TestCase
 
         $this->assertEquals(1, $data['id']);
 
-        $this->assertEquals('test@example.com', $data['email']);
+        $this->assertEquals('sample', $data['name']);
+
+        $this->assertEquals('sample', $data['email']);
+
+        $this->assertEquals(null, $data['status']);
 
         $this->assertEquals('2023-01-01T00:00:00+00:00', $data['created_at']);
-
-        $this->assertEquals(true, $data['active']);
-
-        $this->assertEquals('ACTIVE', $data['status']);
 
     }
 }

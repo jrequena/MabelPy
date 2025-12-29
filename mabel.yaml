@@ -10,6 +10,7 @@ paths:
   application: src/Application
   infrastructure: src/Infrastructure
   tests: tests
+  docs: docs
   snapshots: tests/snapshots
 
 generators:
@@ -42,6 +43,10 @@ generators:
     enabled: true
     framework: phpunit
     namespace_suffix: Tests
+
+  documentation:
+    enabled: true
+    format: markdown
 
 php:
   strict_types: true

@@ -88,8 +88,8 @@ class PhpDtoGenerator(BaseGenerator):
             raw_type = field["type"]
             nullable = field.get("nullable", False)
 
-            if raw_type == "enum":
-                enum_name = field["enum"]
+            if raw_type == "enum" or raw_type in enums:
+                enum_name = field["enum"] if raw_type == "enum" else raw_type
                 php_type = f"?{enum_name}" if nullable else enum_name
                 normalized.append({
                     "name": field["name"],

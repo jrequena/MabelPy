@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Tests;
 
 use PHPUnit\Framework\TestCase;
-use App\Domain\Enum\UserStatus;
 use App\Domain\User;
-use App\Domain\ValueObject\Email;
 
 
 final class UserTest extends TestCase
@@ -18,13 +16,13 @@ final class UserTest extends TestCase
 
             1,
 
-            new Email('test@example.com'),
+            'sample',
+
+            'sample',
+
+            null,
 
             new \DateTimeImmutable(),
-
-            true,
-
-            UserStatus::ACTIVE,
 
         );
 

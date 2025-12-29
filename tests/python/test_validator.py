@@ -1,0 +1,90 @@
+import pytest
+from core.contract.validator import ContractValidator
+
+def test_validate_valid_legacy_contract():
+    validator = ContractValidator()
+    contract = {
+        "entity": {"name": "User"},
+        "fields": [
+            {"name": "id", "type": "int"},
+            {"name": "email", "type": "Email"}
+        ]
+    }
+    # Should not raise exception
+    validator.validate(contract)
+
+def test_validate_valid_entities_contract():
+    validator = ContractValidator()
+    contract = {
+        "entities": {
+            "User": {
+                "id": "int",
+                "email": {"type": "Email", "nullable": True}
+            }
+        }
+    }
+    validator.validate(contract)
+
+def test_validate_invalid_type():
+    validator = ContractValidator()
+    contract = {
+        "entities": {
+            "User": {
+                "id": "UnknownType"
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="Unknown type referenced"):
+        validator.validate(contract)
+
+def test_validate_invalid_enum_reference():
+    validator = ContractValidator()
+    contract = {
+        "entities": {
+            "User": {
+                "status": {"type": "enum", "enum": "UndefinedEnum"}
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="references undefined enum"):
+        validator.validate(contract)
+
+def test_validate_valid_enum():
+    validator = ContractValidator()
+    contract = {
+        "enums": {
+            "UserStatus": {
+                "type": "string",
+                "values": ["ACTIVE", "INACTIVE"]
+            }
+        },
+        "entities": {
+            "User": {
+                "status": "UserStatus"
+            }
+        }
+    }
+    validator.validate(contract)
+
+def test_validate_constraints():
+    validator = ContractValidator()
+    contract = {
+        "entities": {
+            "User": {
+                "age": {"type": "int", "min": 18, "max": 120}
+            }
+        }
+    }
+    validator.validate(contract)
+
+def test_validate_invalid_constraints():
+    validator = ContractValidator()
+    contract = {
+        "entities": {
+            "User": {
+                "age": {"type": "int", "min": "invalid"}
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="must be numeric"):
+        validator.validate(contract)
