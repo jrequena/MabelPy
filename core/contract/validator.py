@@ -92,16 +92,42 @@ class ContractValidator:
             for uc_name, uc_def in use_cases.items():
                 if not isinstance(uc_def, dict):
                     raise ValueError(f"Use case '{uc_name}' must be a mapping")
+                
                 # Validate input types
                 inputs = uc_def.get("input", {})
                 if not isinstance(inputs, dict):
                     raise ValueError(f"Use case '{uc_name}' input must be a mapping")
                 for in_name, in_type in inputs.items():
                     if isinstance(in_type, str):
-                        self._validate_type_reference(in_type, enums, entities, f"use_case:{uc_name}", in_name)
+                        # Handle optional marker in type
+                        self._validate_type_reference(in_type.replace("?", ""), enums, entities, f"use_case:{uc_name}", in_name)
                     else:
                         raise ValueError(f"Invalid input type for '{in_name}' in use case '{uc_name}'")
-                # TODO: further validate output and rules structure
+
+                # Validate output
+                output = uc_def.get("output")
+                if output:
+                    if isinstance(output, str):
+                        clean_output = output.replace("?", "")
+                        if clean_output != "void":
+                            self._validate_type_reference(clean_output, enums, entities, f"use_case:{uc_name}", "output")
+                    elif isinstance(output, dict):
+                        for out_name, out_type in output.items():
+                            if isinstance(out_type, str):
+                                self._validate_type_reference(out_type.replace("?", ""), enums, entities, f"use_case:{uc_name}:output", out_name)
+                    else:
+                        raise ValueError(f"Invalid output definition for use case '{uc_name}'")
+
+                # Validate rules
+                rules = uc_def.get("rules", [])
+                if not isinstance(rules, list):
+                    raise ValueError(f"Rules for use case '{uc_name}' must be a list")
+                for rule in rules:
+                    if not isinstance(rule, dict) or len(rule) != 1:
+                        raise ValueError(f"Each rule in '{uc_name}' must be a single-key mapping (e.g., ensure: condition)")
+                    rule_type = list(rule.keys())[0]
+                    if rule_type not in {"ensure", "set_default", "transition", "emit"}:
+                        raise ValueError(f"Unknown rule type '{rule_type}' in use case '{uc_name}'")
 
     def _validate_type_reference(self, type_name: str, enums: Dict[str, Any], entities: Dict[str, Any], ctx_entity: str, ctx_field: str):
         # allow optional marker like "status?"? Not supported here; treat as exact

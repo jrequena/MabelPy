@@ -64,7 +64,7 @@ class GenerateCommand:
                 entity_contract = {
                     "entity": {"name": entity_name},
                     "fields": self._normalize_fields_to_list(fields),
-                    "enums": contract.get("enums", {})
+                    "enums": contract.get("enums", {}), "use_cases": contract.get("use_cases", {})
                 }
                 dto_gen.generate(entity_contract, output_dir)
             
@@ -86,7 +86,7 @@ class GenerateCommand:
                 entity_contract = {
                     "entity": {"name": entity_name},
                     "fields": self._normalize_fields_to_list(fields),
-                    "enums": contract.get("enums", {})
+                    "enums": contract.get("enums", {}), "use_cases": contract.get("use_cases", {})
                 }
                 mapper_gen.generate(entity_contract, output_dir)
             
@@ -97,7 +97,7 @@ class GenerateCommand:
                     entity_contract = {
                         "entity": {"name": entity_name},
                         "fields": self._normalize_fields_to_list(fields),
-                        "enums": contract.get("enums", {})
+                        "enums": contract.get("enums", {}), "use_cases": contract.get("use_cases", {})
                     }
                     test_gen.generate(entity_contract, output_dir)
             
@@ -108,7 +108,7 @@ class GenerateCommand:
                     entity_contract = {
                         "entity": {"name": entity_name},
                         "fields": self._normalize_fields_to_list(fields),
-                        "enums": contract.get("enums", {})
+                        "enums": contract.get("enums", {}), "use_cases": contract.get("use_cases", {})
                     }
                     doc_gen.generate(entity_contract, output_dir)
             

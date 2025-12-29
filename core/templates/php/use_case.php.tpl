@@ -14,7 +14,11 @@ final class {{ class_name }}
 
     public function execute({{ request_class }} $request): {{ response_class }}
     {
-        // TODO: Implement business logic
+{% for rule in business_rules %}
+        {{ rule }}
+{% endfor %}
+
+        // TODO: Implement actual execution and persistence
         return new {{ response_class }}();
     }
 }

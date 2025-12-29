@@ -12,14 +12,11 @@ class PhpUseCaseGenerator(BaseGenerator):
         if not use_cases:
             return []
 
-        # In UserMVP.yaml, use cases are top-level. 
-        # We'll associate them with the first entity if not specified.
         entities = list(contract.get("entities", {}).keys())
         primary_entity = entities[0] if entities else "Default"
 
         generated_files = []
         for uc_name, uc_def in use_cases.items():
-            # Try to find target entity in uc_def or use primary
             entity_name = uc_def.get("entity", primary_entity)
             generated_files.extend(self._generate_single_use_case(entity_name, uc_name, uc_def, output_dir))
             
@@ -39,15 +36,12 @@ class PhpUseCaseGenerator(BaseGenerator):
         req_class = f"{uc_name}Request"
         res_class = f"{uc_name}Response"
 
-        # Generate Request/Response DTOs if enabled
         if uc_config.get("with_request_response", True):
             inputs = uc_def.get("input", {})
             if isinstance(inputs, dict):
                 files.append(self._generate_dto(target_ns, req_class, inputs, target_dir))
             
             output = uc_def.get("output", "void")
-            # If output is a string (entity name or primitive), we create a response with one field or use it directly
-            # For simplicity in MVP, we create a response DTO if it's a mapping or just a simple one.
             res_fields = {}
             if isinstance(output, dict):
                 res_fields = output
@@ -56,7 +50,6 @@ class PhpUseCaseGenerator(BaseGenerator):
             
             files.append(self._generate_dto(target_ns, res_class, res_fields, target_dir))
 
-        # Generate UseCase
         template = self.load_template("use_case.php.tpl")
         
         repo_config = self.config.get_generator_config("repository")
@@ -64,13 +57,16 @@ class PhpUseCaseGenerator(BaseGenerator):
         repo_ns = f"{base_ns}\\{repo_suffix.replace('/', '\\')}"
         repo_name = f"{entity_name}Repository"
         
+        business_rules = self._generate_business_logic(uc_def.get("rules", []))
+
         context = {
             "namespace": target_ns,
             "class_name": f"{uc_name}UseCase",
             "repository_name": repo_name,
             "request_class": req_class,
             "response_class": res_class,
-            "imports_block": f"use {repo_ns}\\{repo_name};"
+            "imports_block": f"use {repo_ns}\\{repo_name};",
+            "business_rules": business_rules
         }
         
         content = self.render(template, context)
@@ -80,13 +76,55 @@ class PhpUseCaseGenerator(BaseGenerator):
         
         return files
 
+    def _generate_business_logic(self, rules: list) -> list:
+        logic_lines = []
+        for rule in rules:
+            rule_type = list(rule.keys())[0]
+            condition = rule[rule_type]
+            
+            if rule_type == "ensure":
+                # Basic translation for demo purposes
+                if "is_unique" in condition:
+                    field = condition.replace("is_unique", "").strip()
+                    logic_lines.append(f"// TODO: Check if ${field} is unique in repository")
+                    logic_lines.append(f"// if (!$this->repository->isUnique{field.capitalize()}($request->{field})) {{")
+                    logic_lines.append(f"//     throw new \\DomainException('{field} already exists');")
+                    logic_lines.append("// }")
+                elif "matches" in condition:
+                    parts = condition.split("matches")
+                    field = parts[0].strip()
+                    regex = parts[1].strip()
+                    logic_lines.append(f"if (!preg_match('{regex}', $request->{field})) {{")
+                    logic_lines.append(f"    throw new \\InvalidArgumentException('{field} does not match required format');")
+                    logic_lines.append("}")
+                elif condition == "user_exists":
+                     logic_lines.append("// TODO: Verify user existence via repository")
+                else:
+                    logic_lines.append(f"// Validation: {condition}")
+            
+            elif rule_type == "set_default":
+                # status = ACTIVE -> $status = UserStatus::ACTIVE (if we knew it was an enum)
+                # For now, simple assignment
+                parts = condition.split("=")
+                if len(parts) == 2:
+                    var_name = parts[0].strip()
+                    value = parts[1].strip()
+                    logic_lines.append(f"${var_name} = {value}; // Default value")
+            
+            elif rule_type == "transition":
+                logic_lines.append(f"// State transition: {condition}")
+            
+            elif rule_type == "emit":
+                logic_lines.append(f"// Emit domain event: {condition}")
+                
+        return logic_lines
+
     def _generate_dto(self, namespace: str, class_name: str, fields: dict, target_dir: Path):
         template = self.load_template("use_case_dto.php.tpl")
         
         promoted_params = []
         for f_name, f_def in fields.items():
             f_type = f_def if isinstance(f_def, str) else f_def.get("type", "mixed")
-            # Remove optional marker if present
             f_type = f_type.replace("?", "")
             f_name = f_name.replace("?", "")
             promoted_params.append(f"public readonly {f_type} ${f_name}")

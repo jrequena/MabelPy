@@ -1,6 +1,6 @@
-# CreateUser
+# UpdateUserEmail
 
-Crear un usuario con validaciones de email y reglas de negocio para estado inicial
+Actualizar el email del usuario y validar formato y unicidad
 
 **Repository**: `UserRepository`
 
@@ -8,9 +8,8 @@ Crear un usuario con validaciones de email y reglas de negocio para estado inici
 
 | Field | Type | Required |
 |-------|------|----------|
-| name | string | Yes |
+| id | int | Yes |
 | email | string | Yes |
-| status | UserStatus | No |
 
 ## Output
 

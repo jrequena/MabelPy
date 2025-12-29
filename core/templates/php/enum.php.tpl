@@ -6,7 +6,7 @@ namespace {{ namespace }};
 
 enum {{ class_name }}: string
 {
-{% for value in values %}
-    case {{ case }} = '{{ value }}';
+{% for item in values %}
+    case {{ item.case }} = '{{ item.value }}';
 {% endfor %}
 }

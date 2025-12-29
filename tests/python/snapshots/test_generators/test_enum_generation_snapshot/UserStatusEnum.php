@@ -6,11 +6,7 @@ namespace App\Domain\Enum;
 
 enum UserStatus: string
 {
-
     case ACTIVE = 'ACTIVE';
-
     case INACTIVE = 'INACTIVE';
-
     case PENDING = 'PENDING';
-
 }
