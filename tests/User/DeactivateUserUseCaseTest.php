@@ -6,15 +6,15 @@ namespace App\Tests;
 
 use PHPUnit\Framework\TestCase;
 use App\Domain\Repository\UserRepository;
-use App\Domain\UseCase\ListUser;
+use App\Domain\UseCase\User\DeactivateUser\DeactivateUserUseCase;
 
-final class ListUserTest extends TestCase
+final class DeactivateUserUseCaseTest extends TestCase
 {
     public function test_can_be_instantiated(): void
     {
         $repository = $this->createMock(UserRepository::class);
-        $useCase = new ListUser($repository);
+        $useCase = new DeactivateUserUseCase($repository);
         
-        $this->assertInstanceOf(ListUser::class, $useCase);
+        $this->assertInstanceOf(DeactivateUserUseCase::class, $useCase);
     }
 }

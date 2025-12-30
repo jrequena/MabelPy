@@ -1,14 +1,15 @@
 import pytest
 from core.contract.validator import ContractValidator
 
-def test_validate_valid_legacy_contract():
+def test_validate_valid_entities_format():
     validator = ContractValidator()
     contract = {
-        "entity": {"name": "User"},
-        "fields": [
-            {"name": "id", "type": "int"},
-            {"name": "email", "type": "Email"}
-        ]
+        "entities": {
+            "User": {
+                "id": "int",
+                "email": "string"
+            }
+        }
     }
     # Should not raise exception
     validator.validate(contract)

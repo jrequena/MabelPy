@@ -6,15 +6,15 @@ namespace App\Tests;
 
 use PHPUnit\Framework\TestCase;
 use App\Domain\Repository\PostRepository;
-use App\Domain\UseCase\CreatePost;
+use App\Domain\UseCase\Post\UpdateUserEmail\UpdateUserEmailUseCase;
 
-final class CreatePostTest extends TestCase
+final class UpdateUserEmailUseCaseTest extends TestCase
 {
     public function test_can_be_instantiated(): void
     {
         $repository = $this->createMock(PostRepository::class);
-        $useCase = new CreatePost($repository);
+        $useCase = new UpdateUserEmailUseCase($repository);
         
-        $this->assertInstanceOf(CreatePost::class, $useCase);
+        $this->assertInstanceOf(UpdateUserEmailUseCase::class, $useCase);
     }
 }

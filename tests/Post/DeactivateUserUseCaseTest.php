@@ -6,15 +6,15 @@ namespace App\Tests;
 
 use PHPUnit\Framework\TestCase;
 use App\Domain\Repository\PostRepository;
-use App\Domain\UseCase\DeletePost;
+use App\Domain\UseCase\Post\DeactivateUser\DeactivateUserUseCase;
 
-final class DeletePostTest extends TestCase
+final class DeactivateUserUseCaseTest extends TestCase
 {
     public function test_can_be_instantiated(): void
     {
         $repository = $this->createMock(PostRepository::class);
-        $useCase = new DeletePost($repository);
+        $useCase = new DeactivateUserUseCase($repository);
         
-        $this->assertInstanceOf(DeletePost::class, $useCase);
+        $this->assertInstanceOf(DeactivateUserUseCase::class, $useCase);
     }
 }

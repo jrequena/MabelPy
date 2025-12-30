@@ -101,25 +101,36 @@ class PhpTestGenerator(BaseGenerator):
         base_ns = self.config.project_namespace
         test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
         namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}"
-        use_case_suffix = self.config.get_generator_config("use_case").get("namespace_suffix", "Domain/UseCase")
-        use_case_ns = f"{base_ns}\\{use_case_suffix.replace('/', '\\')}"
+        
+        use_case_config = self.config.get_generator_config("use_case")
+        use_case_suffix = use_case_config.get("namespace_suffix", "Domain/UseCase")
+        
         repo_suffix = self.config.get_generator_config("repository").get("interface_namespace_suffix", "Domain/Repository")
         repo_ns = f"{base_ns}\\{repo_suffix.replace('/', '\\')}"
-        use_cases = ["Create", "Update", "Get", "Delete", "List"]
-        for uc in use_cases:
-            class_name = f"{uc}{entity_name}"
-            imports = [f"{use_case_ns}\\{class_name}", f"{repo_ns}\\{entity_name}Repository"]
+        
+        use_cases = contract.get("use_cases", {})
+        
+        for uc_name in use_cases.keys():
+            full_class_name = f"{uc_name}UseCase"
+            # New structure: App\Domain\UseCase\{Entity}\{UseCaseName}\{UseCaseName}UseCase
+            use_case_ns = f"{base_ns}\\{use_case_suffix.replace('/', '\\')}\\{entity_name}\\{uc_name}"
+            
+            imports = [
+                f"{use_case_ns}\\{full_class_name}", 
+                f"{repo_ns}\\{entity_name}Repository"
+            ]
             imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports)))])
             if imports_block:
                 imports_block += "\n"
+                
             context = {
                 "namespace": namespace,
-                "class_name": class_name,
+                "class_name": full_class_name,
                 "repository_name": f"{entity_name}Repository",
                 "imports_block": imports_block
             }
             content = self.render(template, context)
-            self._write_test_file(entity_name, f"{class_name}Test.php", content)
+            self._write_test_file(entity_name, f"{full_class_name}Test.php", content)
 
     def _write_test_file(self, entity_name: str, filename: str, content: str):
         test_root = Path(self.config.get("paths.tests", "tests")).absolute()
