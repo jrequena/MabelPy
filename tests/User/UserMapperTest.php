@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use PHPUnit\Framework\TestCase;
 use App\Domain\User;
 use App\Infrastructure\Mapper\UserMapper;
-
+use PHPUnit\Framework\TestCase;
 final class UserMapperTest extends TestCase
 {
     public function test_can_map_from_array(): void

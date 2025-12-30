@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace <class 'jinja2.utils.Namespace'>;
+
 namespace Database\Seeders;
 
 use App\Infrastructure\Persistence\Eloquent\User;

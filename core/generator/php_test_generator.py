@@ -23,17 +23,16 @@ class PhpTestGenerator(BaseGenerator):
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         entity_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}"
         fields_data = self._prepare_fields(contract["fields"], entity_ns, contract.get("enums", {}))
-        imports = [f"{entity_ns}\\{entity_name}"]
+        imports = [f"{entity_ns}\\{entity_name}", "PHPUnit\\Framework\\TestCase"]
         for f in fields_data:
             if f.get("import"):
                 imports.append(f["import"])
-        imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports))) if imp])
-        if imports_block:
-            imports_block += "\n"
+        imports = sorted(list(set(imports)))
+        
         context = {
             "namespace": namespace,
             "class_name": entity_name,
-            "imports_block": imports_block,
+            "imports": imports,
             "fields": fields_data
         }
         content = self.render(template, context)
@@ -77,18 +76,17 @@ class PhpTestGenerator(BaseGenerator):
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         entity_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}"
         fields_data = self._prepare_fields_for_mapper(contract["fields"], entity_ns)
-        imports = [f"{entity_ns}\\{entity_name}", f"{mapper_ns}\\{entity_name}Mapper"]
+        imports = [f"{entity_ns}\\{entity_name}", f"{mapper_ns}\\{entity_name}Mapper", "PHPUnit\\Framework\\TestCase"]
         for f in fields_data:
             if f.get("import"):
                 imports.append(f["import"])
-        imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports))) if imp])
-        if imports_block:
-            imports_block += "\n"
+        imports = sorted(list(set(imports)))
+        
         context = {
             "namespace": namespace,
             "class_name": f"{entity_name}Mapper",
             "entity_name": entity_name,
-            "imports_block": imports_block,
+            "imports": imports,
             "fields": fields_data
         }
         content = self.render(template, context)
@@ -116,17 +114,16 @@ class PhpTestGenerator(BaseGenerator):
             
             imports = [
                 f"{use_case_ns}\\{full_class_name}", 
-                f"{repo_ns}\\{entity_name}Repository"
+                f"{repo_ns}\\{entity_name}Repository",
+                "PHPUnit\\Framework\\TestCase"
             ]
-            imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports)))])
-            if imports_block:
-                imports_block += "\n"
+            imports = sorted(list(set(imports)))
                 
             context = {
                 "namespace": namespace,
                 "class_name": full_class_name,
                 "repository_name": f"{entity_name}Repository",
-                "imports_block": imports_block
+                "imports": imports
             }
             content = self.render(template, context)
             self._write_test_file(entity_name, f"{full_class_name}Test.php", content)

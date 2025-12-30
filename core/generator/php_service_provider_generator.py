@@ -32,9 +32,17 @@ class PhpServiceProviderGenerator(BaseGenerator):
                 "implementation_name": impl_name
             })
             
+        imports = ["Illuminate\\Support\\ServiceProvider"]
+        for binding in bindings:
+            imports.append(binding["interface"])
+            imports.append(binding["implementation"])
+        
+        imports = sorted(list(set(imports)))
+
         context = {
             "namespace": namespace,
             "class_name": f"{contract['module']['name']}ServiceProvider",
+            "imports": imports,
             "bindings": bindings
         }
         

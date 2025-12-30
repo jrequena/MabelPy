@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace {{ namespace }};
 
-use PHPUnit\Framework\TestCase;
-{{ imports_block }}
+{% for import in imports %}
+use {{ import }};
+{% endfor %}
 final class {{ class_name }}Test extends TestCase
 {
     public function test_can_map_from_array(): void

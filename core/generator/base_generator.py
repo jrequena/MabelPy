@@ -18,9 +18,9 @@ class BaseGenerator:
         self.env.filters[name] = func
 
     def render(self, template, context: dict) -> str:
-        # For backward compatibility, if template is a string, we might need to handle it.
-        # But load_template now returns a Jinja template object.
         if isinstance(template, str):
-            # If it's already a string, we can use a temporary template
-            return self.env.from_string(template).render(**context)
-        return template.render(**context)
+            content = self.env.from_string(template).render(**context)
+        else:
+            content = template.render(**context)
+        
+        return content.rstrip() + "\n"
