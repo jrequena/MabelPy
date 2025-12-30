@@ -123,9 +123,11 @@ class GenerateCommand:
             # 10. Tests
             if self.config.get("generators.tests.enabled", True):
                 test_gen = PhpTestGenerator(self.config)
+                all_entities = list(contract.get("entities", {}).keys())
                 for entity_name, fields in contract.get("entities", {}).items():
                     entity_contract = {
                         "entity": {"name": entity_name},
+                        "entities": all_entities,
                         "fields": self._normalize_fields_to_list(fields),
                         "enums": contract.get("enums", {}),
                         "use_cases": contract.get("use_cases", {})
@@ -135,9 +137,11 @@ class GenerateCommand:
             # 11. Documentation
             if self.config.get("generators.documentation.enabled", True):
                 doc_gen = PhpDocGenerator(self.config)
+                all_entities = list(contract.get("entities", {}).keys())
                 for entity_name, fields in contract.get("entities", {}).items():
                     entity_contract = {
                         "entity": {"name": entity_name},
+                        "entities": all_entities,
                         "fields": self._normalize_fields_to_list(fields),
                         "enums": contract.get("enums", {}),
                         "use_cases": contract.get("use_cases", {})

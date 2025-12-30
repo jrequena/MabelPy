@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Tests;
+namespace App\Tests\User;
 
 use App\Domain\User;
 use App\Infrastructure\Mapper\UserMapper;
 use PHPUnit\Framework\TestCase;
+
 final class UserMapperTest extends TestCase
 {
     public function test_can_map_from_array(): void

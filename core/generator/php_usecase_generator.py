@@ -140,7 +140,7 @@ class PhpUseCaseGenerator(BaseGenerator):
             f_type = f_def if isinstance(f_def, str) else f_def.get("type", "mixed")
             f_type = f_type.replace("?", "")
             f_name = f_name.replace("?", "")
-            promoted_params.append(f"public readonly {f_type} ${f_name}")
+            promoted_params.append(f"readonly {f_type} ${f_name}")
             
         context = {
             "namespace": namespace,

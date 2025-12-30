@@ -19,7 +19,7 @@ class PhpTestGenerator(BaseGenerator):
         base_ns = self.config.project_namespace
         test_config = self.config.get_generator_config("tests")
         test_suffix = test_config.get("namespace_suffix", "Tests")
-        namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}"
+        namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}\\{entity_name}"
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         entity_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}"
         fields_data = self._prepare_fields(contract["fields"], entity_ns, contract.get("enums", {}))
@@ -40,9 +40,10 @@ class PhpTestGenerator(BaseGenerator):
 
     def _generate_vo_tests(self, contract: dict):
         template = self.load_template("test_vo.php.tpl")
+        entity_name = contract["entity"]["name"]
         base_ns = self.config.project_namespace
         test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
-        namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}"
+        namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}\\{entity_name}"
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         vo_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}\\ValueObject"
         auto_types = self.config.get("generators.value_objects.auto_types", [])
@@ -70,7 +71,7 @@ class PhpTestGenerator(BaseGenerator):
         entity_name = contract["entity"]["name"]
         base_ns = self.config.project_namespace
         test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
-        namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}"
+        namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}\\{entity_name}"
         mapper_suffix = self.config.get_generator_config("mapper").get("namespace_suffix", "Infrastructure/Mapper")
         mapper_ns = f"{base_ns}\\{mapper_suffix.replace('/', '\\')}"
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
@@ -97,7 +98,7 @@ class PhpTestGenerator(BaseGenerator):
         entity_name = contract["entity"]["name"]
         base_ns = self.config.project_namespace
         test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
-        namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}"
+        namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}\\{entity_name}"
         
         use_case_config = self.config.get_generator_config("use_case")
         use_case_suffix = use_case_config.get("namespace_suffix", "Domain/UseCase")
@@ -106,8 +107,15 @@ class PhpTestGenerator(BaseGenerator):
         repo_ns = f"{base_ns}\\{repo_suffix.replace('/', '\\')}"
         
         use_cases = contract.get("use_cases", {})
+        entities = contract.get("entities", [])
+        primary_entity = entities[0] if entities else entity_name
         
-        for uc_name in use_cases.keys():
+        for uc_name, uc_def in use_cases.items():
+            # Filter use cases by entity
+            uc_entity = uc_def.get("entity", primary_entity)
+            if uc_entity != entity_name:
+                continue
+
             full_class_name = f"{uc_name}UseCase"
             # New structure: App\Domain\UseCase\{Entity}\{UseCaseName}\{UseCaseName}UseCase
             use_case_ns = f"{base_ns}\\{use_case_suffix.replace('/', '\\')}\\{entity_name}\\{uc_name}"

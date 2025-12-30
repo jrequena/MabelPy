@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Tests;
+namespace App\Tests\Post;
 
 use App\Domain\Post;
 use App\Infrastructure\Mapper\PostMapper;
 use PHPUnit\Framework\TestCase;
+
 final class PostMapperTest extends TestCase
 {
     public function test_can_map_from_array(): void

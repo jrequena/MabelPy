@@ -54,8 +54,13 @@ class PhpDocGenerator(BaseGenerator):
         entity_name = contract["entity"]["name"]
         
         use_cases = contract.get("use_cases", {})
+        entities = contract.get("entities", [])
+        primary_entity = entities[0] if entities else entity_name
+
         for uc_name, uc_def in use_cases.items():
-            if uc_def.get("entity", entity_name) != entity_name:
+            # Filter use cases by entity
+            uc_entity = uc_def.get("entity", primary_entity)
+            if uc_entity != entity_name:
                 continue
                 
             req_fields = []
