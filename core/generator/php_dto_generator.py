@@ -103,19 +103,23 @@ class PhpDtoGenerator(BaseGenerator):
             
             if "belongs_to" in field:
                 target = field["belongs_to"]
+                nullable = field.get("nullable", True)
+                php_type = f"?{target}" if nullable else target
                 normalized.append({
                     "name": field["name"],
-                    "type": target,
-                    "nullable": field.get("nullable", True)
+                    "type": php_type,
+                    "nullable": nullable
                 })
                 continue
 
             if "has_one" in field:
                 target = field["has_one"]
+                nullable = field.get("nullable", True)
+                php_type = f"?{target}" if nullable else target
                 normalized.append({
                     "name": field["name"],
-                    "type": target,
-                    "nullable": field.get("nullable", True)
+                    "type": php_type,
+                    "nullable": nullable
                 })
                 continue
 

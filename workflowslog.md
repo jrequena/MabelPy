@@ -1,15 +1,8 @@
 Run vendor/bin/phpunit
-  vendor/bin/phpunit
-  shell: /usr/bin/bash -e {0}
-  env:
-    pythonLocation: /opt/hostedtoolcache/Python/3.12.12/x64
-    PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib/pkgconfig
-    Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
-    Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
-    Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
-    LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib
-    COMPOSER_PROCESS_TIMEOUT: 0
-    COMPOSER_NO_INTERACTION: 1
-    COMPOSER_NO_AUDIT: 1
-PHP Fatal error:  Cannot declare class App\Tests\CreateUserUseCaseTest, because the name is already in use in /home/runner/work/MabelPy/MabelPy/tests/User/CreateUserUseCaseTest.php on line 11
+PHPUnit 10.5.60 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.2.29
+Configuration: /home/runner/work/MabelPy/MabelPy/phpunit.xml
+
+PHP Fatal error:  Cannot use null as default value for parameter $user of type App\Domain\User in /home/runner/work/MabelPy/MabelPy/src/Domain/Post.php on line 9
 Error: Process completed with exit code 255.
