@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\User;
 
+use App\Domain\Enum\UserStatus;
 use App\Domain\User;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +16,7 @@ final class UserTest extends TestCase
             1,
             'sample',
             'sample',
-            null,
+            UserStatus::ACTIVE,
             new \DateTimeImmutable(),
             [],
         );

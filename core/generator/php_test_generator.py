@@ -76,7 +76,7 @@ class PhpTestGenerator(BaseGenerator):
         mapper_ns = f"{base_ns}\\{mapper_suffix.replace('/', '\\')}"
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         entity_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}"
-        fields_data = self._prepare_fields_for_mapper(contract["fields"], entity_ns)
+        fields_data = self._prepare_fields_for_mapper(contract["fields"], entity_ns, contract.get("enums", {}))
         imports = [f"{entity_ns}\\{entity_name}", f"{mapper_ns}\\{entity_name}Mapper", "PHPUnit\\Framework\\TestCase"]
         for f in fields_data:
             if f.get("import"):
@@ -143,7 +143,7 @@ class PhpTestGenerator(BaseGenerator):
         file_path = target_dir / filename
         file_path.write_text(content)
 
-    def _prepare_fields_for_mapper(self, fields: list, domain_ns: str):
+    def _prepare_fields_for_mapper(self, fields: list, domain_ns: str, enums: dict):
         prepared = []
         auto_vos = self.config.get("generators.value_objects.auto_types", [])
         for field in fields:
@@ -156,11 +156,14 @@ class PhpTestGenerator(BaseGenerator):
             elif "belongs_to" in field or "has_one" in field:
                 f_data["sample_value"] = "null"
                 f_data["sample_raw_value"] = "null"
-            elif raw_type == "enum":
+            elif raw_type == "enum" or raw_type in enums:
                 enum_name = field.get("enum") or raw_type
                 f_data["import"] = f"{domain_ns}\\Enum\\{enum_name}"
-                f_data["sample_value"] = f"{enum_name}::ACTIVE"
-                f_data["sample_raw_value"] = "'ACTIVE'"
+                # Try to get first value from enum definition
+                enum_values = enums.get(enum_name, {}).get("values", ["ACTIVE"])
+                first_val = enum_values[0] if enum_values else "ACTIVE"
+                f_data["sample_value"] = f"{enum_name}::{first_val}"
+                f_data["sample_raw_value"] = f"'{first_val}'"
             elif raw_type in auto_vos:
                 f_data["import"] = f"{domain_ns}\\ValueObject\\{raw_type}"
                 val = "'test@example.com'" if raw_type == "Email" else "'sample'"
@@ -195,10 +198,12 @@ class PhpTestGenerator(BaseGenerator):
                 f_data["sample_value"] = "[]"
             elif "belongs_to" in field or "has_one" in field:
                 f_data["sample_value"] = "null"
-            elif raw_type == "enum":
+            elif raw_type == "enum" or raw_type in enums:
                 enum_name = field.get("enum") or raw_type
                 f_data["import"] = f"{domain_ns}\\Enum\\{enum_name}"
-                f_data["sample_value"] = f"{enum_name}::ACTIVE"
+                enum_values = enums.get(enum_name, {}).get("values", ["ACTIVE"])
+                first_val = enum_values[0] if enum_values else "ACTIVE"
+                f_data["sample_value"] = f"{enum_name}::{first_val}"
             elif raw_type in auto_vos:
                 f_data["import"] = f"{domain_ns}\\ValueObject\\{raw_type}"
                 val = "'test@example.com'" if raw_type == "Email" else "'sample'"
