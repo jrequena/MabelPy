@@ -14,6 +14,9 @@ from core.generator.php_eloquent_repository_generator import PhpEloquentReposito
 from core.generator.php_service_provider_generator import PhpServiceProviderGenerator
 from core.generator.php_factory_generator import PhpFactoryGenerator
 from core.generator.php_seeder_generator import PhpSeederGenerator
+from core.generator.php_form_request_generator import PhpFormRequestGenerator
+from core.generator.php_controller_generator import PhpControllerGenerator
+from core.generator.open_api_generator import OpenApiGenerator
 from core.contract.parser import ContractParser
 from core.contract.validator import ContractValidator
 from core.config import MabelConfig
@@ -32,18 +35,20 @@ class GenerateCommand:
 
         try:
             contract = ContractParser().parse(contract_path)
-            ContractValidator().validate(contract)
-
-            # Unified format normalization
+            
+            # Unified format normalization BEFORE validation
             if "entities" not in contract and "entity" in contract:
-                fields_list = contract["fields"]
+                fields_list = contract.get("fields", [])
                 field_map = {}
                 for f in fields_list:
-                    fname = f["name"]
-                    fd = dict(f)
-                    fd.pop("name", None)
-                    field_map[fname] = fd
+                    fname = f.get("name")
+                    if fname:
+                        fd = dict(f)
+                        fd.pop("name", None)
+                        field_map[fname] = fd
                 contract["entities"] = {contract["entity"]["name"]: field_map}
+
+            ContractValidator().validate(contract)
 
             output_dir = Path(self.config.get("paths.source_root", "src")).absolute()
 
@@ -108,7 +113,12 @@ class GenerateCommand:
             PhpFactoryGenerator(self.config).generate(contract, output_dir)
             PhpSeederGenerator(self.config).generate(contract, output_dir)
 
-            # 9. Tests
+            # 9. API & Input (Phase 5)
+            PhpFormRequestGenerator(self.config).generate(contract, output_dir)
+            PhpControllerGenerator(self.config).generate(contract, output_dir)
+            OpenApiGenerator(self.config).generate(contract, output_dir)
+
+            # 10. Tests
             if self.config.get("generators.tests.enabled", True):
                 test_gen = PhpTestGenerator(self.config)
                 for entity_name, fields in contract.get("entities", {}).items():
@@ -120,7 +130,7 @@ class GenerateCommand:
                     }
                     test_gen.generate(entity_contract, output_dir)
             
-            # 10. Documentation
+            # 11. Documentation
             if self.config.get("generators.documentation.enabled", True):
                 doc_gen = PhpDocGenerator(self.config)
                 for entity_name, fields in contract.get("entities", {}).items():

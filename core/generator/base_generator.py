@@ -14,6 +14,9 @@ class BaseGenerator:
     def load_template(self, name: str):
         return self.env.get_template(name)
 
+    def add_filter(self, name: str, func):
+        self.env.filters[name] = func
+
     def render(self, template, context: dict) -> str:
         # For backward compatibility, if template is a string, we might need to handle it.
         # But load_template now returns a Jinja template object.
