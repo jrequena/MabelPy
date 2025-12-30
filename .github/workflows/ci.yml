@@ -49,6 +49,6 @@ jobs:
           PYTHONPATH: .
         run: python3 mabel.py generate contracts/UserMVP.yaml
       - name: Check PHP Formatting
-        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
       - name: Run PHPUnit Tests
         run: vendor/bin/phpunit
