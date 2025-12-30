@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace {{ namespace }};
+
 namespace Database\Factories;
 
 use {{ model_import }};

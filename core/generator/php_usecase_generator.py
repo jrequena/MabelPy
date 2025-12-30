@@ -61,8 +61,11 @@ class PhpUseCaseGenerator(BaseGenerator):
         business_rules = logic_result["logic"]
         extra_imports = logic_result["imports"]
 
-        imports = [f"use {repo_ns}\\{repo_name};"]
-        imports.extend([f"use {imp};" for imp in extra_imports])
+        imports = [f"{repo_ns}\\{repo_name}"]
+        imports.extend(extra_imports)
+        imports = sorted(list(set(imports)))
+
+        imports_block = "\n".join([f"use {imp};" for imp in imports])
 
         context = {
             "namespace": target_ns,
@@ -70,7 +73,7 @@ class PhpUseCaseGenerator(BaseGenerator):
             "repository_name": repo_name,
             "request_class": req_class,
             "response_class": res_class,
-            "imports_block": "\n".join(imports),
+            "imports_block": imports_block,
             "business_rules": business_rules
         }
         
