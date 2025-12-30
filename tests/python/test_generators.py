@@ -1,6 +1,4 @@
 import pytest
-import shutil
-from pathlib import Path
 from core.generator.php_dto_generator import PhpDtoGenerator
 from core.generator.php_enum_generator import PhpEnumGenerator
 from core.config import MabelConfig

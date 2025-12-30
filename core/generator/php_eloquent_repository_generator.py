@@ -15,7 +15,6 @@ class PhpEloquentRepositoryGenerator(BaseGenerator):
         repo_impl_suffix = "Infrastructure/Persistence/Eloquent"
         namespace = f"{base_ns}\\{repo_impl_suffix.replace('/', '\\')}"
         
-        domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         interface_ns_suffix = self.config.get_generator_config("repository").get("interface_namespace_suffix", "Domain/Repository")
         
         for entity_name in entities:

@@ -51,10 +51,12 @@ class PhpDtoGenerator(BaseGenerator):
 
         all_imports = sorted(list(set(type_imports)))
         if enum_imports:
-            if all_imports: all_imports.append("")
+            if all_imports:
+                all_imports.append("")
             all_imports.extend(sorted(list(set(enum_imports))))
         if vo_imports:
-            if all_imports: all_imports.append("")
+            if all_imports:
+                all_imports.append("")
             all_imports.extend(sorted(list(set(vo_imports))))
 
         imports_block = "\n".join([f"use {imp};" if imp else "" for imp in all_imports])
@@ -119,7 +121,8 @@ class PhpDtoGenerator(BaseGenerator):
 
             # Standard Fields
             raw_type = field.get("type")
-            if not raw_type: continue # Safety for malformed
+            if not raw_type:
+                continue  # Safety for malformed
             
             nullable = field.get("nullable", False)
 
@@ -168,9 +171,12 @@ class PhpDtoGenerator(BaseGenerator):
         return normalized, type_imports, enum_imports, vo_imports
 
     def _format_default(self, value):
-        if value is None: return "null"
-        if isinstance(value, bool): return "true" if value else "false"
-        if isinstance(value, str): return f'"{value}"'
+        if value is None:
+            return "null"
+        if isinstance(value, bool):
+            return "true" if value else "false"
+        if isinstance(value, str):
+            return f'"{value}"'
         return str(value)
 
     def _format_enum_default(self, enum_name: str, value: str):
@@ -181,7 +187,8 @@ class PhpDtoGenerator(BaseGenerator):
         validations = []
         for field in fields:
             name = field.get("name")
-            if not name: continue
+            if not name:
+                continue
             rules = field.get("validations", [])
             nullable = field.get("nullable", False)
             ftype = field.get("type")

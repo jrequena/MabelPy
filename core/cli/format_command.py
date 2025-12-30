@@ -1,5 +1,4 @@
 import subprocess
-from pathlib import Path
 from core.config import MabelConfig
 
 class FormatCommand:

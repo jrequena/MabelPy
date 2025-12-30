@@ -48,9 +48,12 @@ class ContractValidator:
                 elif isinstance(field_def, dict):
                     # Check for relationship
                     rel_type = None
-                    if "belongs_to" in field_def: rel_type = "belongs_to"
-                    elif "has_many" in field_def: rel_type = "has_many"
-                    elif "has_one" in field_def: rel_type = "has_one"
+                    if "belongs_to" in field_def:
+                        rel_type = "belongs_to"
+                    elif "has_many" in field_def:
+                        rel_type = "has_many"
+                    elif "has_one" in field_def:
+                        rel_type = "has_one"
                     
                     if rel_type:
                         target = field_def[rel_type]

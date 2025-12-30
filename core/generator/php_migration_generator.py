@@ -33,7 +33,8 @@ class PhpMigrationGenerator(BaseGenerator):
         for entity_name, fields in entities.items():
             # For simplicity, table name is plural of entity or from entity meta
             table_name = entity_name.lower() + "s" 
-            if entity_name == "User": table_name = "users" # match contract example
+            if entity_name == "User":
+                table_name = "users" # match contract example
             
             migration_fields = self._prepare_migration_fields(fields)
             

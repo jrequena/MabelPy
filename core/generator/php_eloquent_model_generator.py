@@ -17,14 +17,16 @@ class PhpEloquentModelGenerator(BaseGenerator):
         
         for entity_name, fields in entities.items():
             table_name = entity_name.lower() + "s"
-            if entity_name == "User": table_name = "users"
+            if entity_name == "User":
+                table_name = "users"
             
             fillable = []
             relationships = []
             imports = set()
             
             for name, f_def in fields.items():
-                if name == "id": continue
+                if name == "id":
+                    continue
                 
                 if isinstance(f_def, dict):
                     if "belongs_to" in f_def:

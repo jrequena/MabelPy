@@ -48,7 +48,8 @@ class PhpFactoryGenerator(BaseGenerator):
     def _prepare_factory_fields(self, fields: dict) -> list:
         lines = []
         for name, f_def in fields.items():
-            if name == "id": continue
+            if name == "id":
+                continue
             
             f_type = "string"
             if isinstance(f_def, dict):
@@ -62,10 +63,12 @@ class PhpFactoryGenerator(BaseGenerator):
                 if "has_many" in f_def or "has_one" in f_def:
                     continue
                 f_type = f_def.get("type", "string")
-                if name == "email": f_type = "email"
+                if name == "email":
+                    f_type = "email"
             else:
                 f_type = f_def
-                if name == "email": f_type = "email"
+                if name == "email":
+                    f_type = "email"
                 
             faker = self.FAKER_MAP.get(f_type, "fake()->word()")
             lines.append({"name": name, "faker_line": faker})

@@ -80,7 +80,8 @@ class PhpMapperGenerator(BaseGenerator):
                  prepared.append(f_data)
                  continue
 
-            if not raw_type: continue
+            if not raw_type:
+                continue
 
             if raw_type == "enum" or raw_type in enums:
                 enum_name = field.get("enum") or raw_type

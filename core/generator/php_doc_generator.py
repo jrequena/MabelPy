@@ -25,9 +25,12 @@ class PhpDocGenerator(BaseGenerator):
         fields_data = []
         for f in contract.get("fields", []):
             f_type = f.get("type", "")
-            if "has_many" in f: f_type = f"Collection<{f['has_many']}>"
-            elif "belongs_to" in f: f_type = f"Relationship(BelongsTo {f['belongs_to']})"
-            elif "has_one" in f: f_type = f"Relationship(HasOne {f['has_one']})"
+            if "has_many" in f:
+                f_type = f"Collection<{f['has_many']}>"
+            elif "belongs_to" in f:
+                f_type = f"Relationship(BelongsTo {f['belongs_to']})"
+            elif "has_one" in f:
+                f_type = f"Relationship(HasOne {f['has_one']})"
 
             fields_data.append({
                 "name": f["name"],

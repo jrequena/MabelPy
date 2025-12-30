@@ -8,7 +8,6 @@ class PhpTestGenerator(BaseGenerator):
         self.config = config
 
     def generate(self, contract: dict, output_dir: Path):
-        entity_name = contract["entity"]["name"]
         self._generate_entity_test(contract)
         self._generate_vo_tests(contract)
         self._generate_mapper_test(contract)

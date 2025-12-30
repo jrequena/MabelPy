@@ -123,7 +123,7 @@ class PhpUseCaseGenerator(BaseGenerator):
                 event_name = condition
                 event_ns = f"{base_ns}\\Domain\\Event\\{entity_name}"
                 imports.append(f"{event_ns}\\{event_name}")
-                logic_lines.append(f"// TODO: Load entity if not available")
+                logic_lines.append("// TODO: Load entity if not available")
                 logic_lines.append(f"// ${entity_name.lower()} = ...")
                 logic_lines.append(f"{event_name}::dispatch($request->id ?? null); // Dispatching event")
                 
