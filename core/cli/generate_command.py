@@ -17,6 +17,7 @@ from core.generator.php_seeder_generator import PhpSeederGenerator
 from core.generator.php_form_request_generator import PhpFormRequestGenerator
 from core.generator.php_controller_generator import PhpControllerGenerator
 from core.generator.open_api_generator import OpenApiGenerator
+from core.generator.php_domain_event_generator import PhpDomainEventGenerator
 from core.contract.parser import ContractParser
 from core.contract.validator import ContractValidator
 from core.config import MabelConfig
@@ -89,7 +90,8 @@ class GenerateCommand:
                 }
                 repo_gen.generate(entity_contract, output_dir)
             
-            # 5. Use Cases
+            # 5. Events & Use Cases
+            PhpDomainEventGenerator(self.config).generate(contract, output_dir)
             PhpUseCaseGenerator(self.config).generate(contract, output_dir)
             
             # 6. Mappers (Infrastructure)

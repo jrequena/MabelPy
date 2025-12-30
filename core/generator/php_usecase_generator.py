@@ -57,7 +57,12 @@ class PhpUseCaseGenerator(BaseGenerator):
         repo_ns = f"{base_ns}\\{repo_suffix.replace('/', '\\')}"
         repo_name = f"{entity_name}Repository"
         
-        business_rules = self._generate_business_logic(uc_def.get("rules", []))
+        logic_result = self._generate_business_logic(uc_def.get("rules", []), entity_name)
+        business_rules = logic_result["logic"]
+        extra_imports = logic_result["imports"]
+
+        imports = [f"use {repo_ns}\\{repo_name};"]
+        imports.extend([f"use {imp};" for imp in extra_imports])
 
         context = {
             "namespace": target_ns,
@@ -65,7 +70,7 @@ class PhpUseCaseGenerator(BaseGenerator):
             "repository_name": repo_name,
             "request_class": req_class,
             "response_class": res_class,
-            "imports_block": f"use {repo_ns}\\{repo_name};",
+            "imports_block": "\n".join(imports),
             "business_rules": business_rules
         }
         
@@ -76,14 +81,16 @@ class PhpUseCaseGenerator(BaseGenerator):
         
         return files
 
-    def _generate_business_logic(self, rules: list) -> list:
+    def _generate_business_logic(self, rules: list, entity_name: str) -> dict:
         logic_lines = []
+        imports = []
+        base_ns = self.config.project_namespace
+
         for rule in rules:
             rule_type = list(rule.keys())[0]
             condition = rule[rule_type]
             
             if rule_type == "ensure":
-                # Basic translation for demo purposes
                 if "is_unique" in condition:
                     field = condition.replace("is_unique", "").strip()
                     logic_lines.append(f"// TODO: Check if ${field} is unique in repository")
@@ -103,8 +110,6 @@ class PhpUseCaseGenerator(BaseGenerator):
                     logic_lines.append(f"// Validation: {condition}")
             
             elif rule_type == "set_default":
-                # status = ACTIVE -> $status = UserStatus::ACTIVE (if we knew it was an enum)
-                # For now, simple assignment
                 parts = condition.split("=")
                 if len(parts) == 2:
                     var_name = parts[0].strip()
@@ -115,9 +120,14 @@ class PhpUseCaseGenerator(BaseGenerator):
                 logic_lines.append(f"// State transition: {condition}")
             
             elif rule_type == "emit":
-                logic_lines.append(f"// Emit domain event: {condition}")
+                event_name = condition
+                event_ns = f"{base_ns}\\Domain\\Event\\{entity_name}"
+                imports.append(f"{event_ns}\\{event_name}")
+                logic_lines.append(f"// TODO: Load entity if not available")
+                logic_lines.append(f"// ${entity_name.lower()} = ...")
+                logic_lines.append(f"{event_name}::dispatch($request->id ?? null); // Dispatching event")
                 
-        return logic_lines
+        return {"logic": logic_lines, "imports": imports}
 
     def _generate_dto(self, namespace: str, class_name: str, fields: dict, target_dir: Path):
         template = self.load_template("use_case_dto.php.tpl")
