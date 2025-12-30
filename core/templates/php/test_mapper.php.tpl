@@ -7,6 +7,7 @@ namespace {{ namespace }};
 {% for import in imports %}
 use {{ import }};
 {% endfor %}
+
 final class {{ class_name }}Test extends TestCase
 {
     public function test_can_map_from_array(): void
