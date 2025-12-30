@@ -11,8 +11,8 @@ tests/python/test_validator.py .......                                   [100%]
 =================================== FAILURES ===================================
 _________________________ test_dto_generation_snapshot _________________________
 
-config = <core.config.mabel_config.MabelConfig object at 0x7f63ad0c6900>
-snapshot = <pytest_snapshot.plugin.Snapshot object at 0x7f63ad1a4e60>
+config = <core.config.mabel_config.MabelConfig object at 0x7f83659dd670>
+snapshot = <pytest_snapshot.plugin.Snapshot object at 0x7f83658938c0>
 tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_dto_generation_snapshot0')
 
     def test_dto_generation_snapshot(config, snapshot, tmp_path):
@@ -48,8 +48,8 @@ E         + }
 tests/python/test_generators.py:30: AssertionError
 ________________________ test_enum_generation_snapshot _________________________
 
-config = <core.config.mabel_config.MabelConfig object at 0x7f63add75eb0>
-snapshot = <pytest_snapshot.plugin.Snapshot object at 0x7f63ad198260>
+config = <core.config.mabel_config.MabelConfig object at 0x7f8365922b70>
+snapshot = <pytest_snapshot.plugin.Snapshot object at 0x7f8365972450>
 tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_enum_generation_snapshot0')
 
     def test_enum_generation_snapshot(config, snapshot, tmp_path):
