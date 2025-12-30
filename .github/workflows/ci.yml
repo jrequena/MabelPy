@@ -22,6 +22,8 @@ jobs:
       - name: Lint with ruff
         run: ruff check .
       - name: Test with pytest
+        env:
+          PYTHONPATH: .
         run: pytest tests/python
 
   test-php-generation:
@@ -43,6 +45,8 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-progress
       - name: Generate Code from MVP Contract
+        env:
+          PYTHONPATH: .
         run: python3 mabel.py generate contracts/UserMVP.yaml
       - name: Check PHP Formatting
         run: vendor/bin/php-cs-fixer fix --dry-run --diff
