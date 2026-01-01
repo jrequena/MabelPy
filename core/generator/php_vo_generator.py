@@ -17,12 +17,25 @@ class PhpValueObjectGenerator(BaseGenerator):
         
         # PHP Type mapping
         php_type = "string"
-        if vo_type.lower() in ["id", "int"]:
-            php_type = "int"
+        vo_type_lower = vo_type.lower()
         
-        validations = ""
-        if vo_type.lower() == "email":
-            validations = 'if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {\n            throw new \\InvalidArgumentException("Invalid email format");\n        }'
+        if vo_type_lower in ["id", "int", "integer"]:
+            php_type = "int"
+        elif vo_type_lower in ["float", "double", "decimal"]:
+            php_type = "float"
+        elif vo_type_lower in ["bool", "boolean"]:
+            php_type = "bool"
+        
+        validations = []
+        if vo_type_lower == "email":
+            validations.append('if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {\n    throw new \\InvalidArgumentException("Invalid email format");\n}')
+        elif vo_type_lower == "uuid":
+            validations.append('if (!preg_match("/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i", $value)) {\n    throw new \\InvalidArgumentException("Invalid UUID format");\n}')
+        elif vo_type_lower == "url":
+            validations.append('if (!filter_var($value, FILTER_VALIDATE_URL)) {\n    throw new \\InvalidArgumentException("Invalid URL format");\n}')
+        elif vo_type_lower == "positive_int":
+            php_type = "int"
+            validations.append('if ($value <= 0) {\n    throw new \\InvalidArgumentException("Value must be a positive integer");\n}')
         
         readonly = "readonly " if self.config.get("php.readonly_default", True) else ""
         
@@ -31,7 +44,7 @@ class PhpValueObjectGenerator(BaseGenerator):
             "class_name": name,
             "readonly": readonly,
             "type": php_type,
-            "validations": validations
+            "validations": "\n".join(validations)
         }
         
         content = self.render(template, context)
