@@ -1,7 +1,6 @@
 import pytest
 from core.generator.php_mapper_generator import PhpMapperGenerator
 from core.config import MabelConfig
-from pathlib import Path
 
 @pytest.fixture
 def config():
