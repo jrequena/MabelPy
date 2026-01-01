@@ -89,3 +89,41 @@ def test_validate_invalid_constraints():
     }
     with pytest.raises(ValueError, match="must be numeric"):
         validator.validate(contract)
+
+def test_validate_invalid_default_type():
+    validator = ContractValidator()
+    contract = {
+        "entities": {
+            "User": {
+                "age": {"type": "int", "default": "not-an-int"}
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="must be an integer"):
+        validator.validate(contract)
+
+def test_validate_invalid_enum_default():
+    validator = ContractValidator()
+    contract = {
+        "enums": {
+            "UserStatus": {
+                "type": "string",
+                "values": ["ACTIVE", "INACTIVE"]
+            }
+        },
+        "entities": {
+            "User": {
+                "status": {"type": "UserStatus", "default": "INVALID"}
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="is not a valid case for enum"):
+        validator.validate(contract)
+
+def test_validate_empty_entities():
+    validator = ContractValidator()
+    contract = {
+        "entities": {}
+    }
+    with pytest.raises(ValueError, match="define a non-empty 'entities' mapping"):
+        validator.validate(contract)

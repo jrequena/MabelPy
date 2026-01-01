@@ -284,3 +284,25 @@ Integration Events: Soporte para definir mensajes de RabbitMQ/Kafka en el contra
 Fase 7: Consolidación de Herramientas (DX)
 Mabel Watch: Un comando que vigile cambios en los archivos .yaml y re-genere el código en tiempo real.
 Interactive CLI: Un asistente para crear contratos YAML mediante preguntas en la terminal.
+
+
+1. Esquema Formal en ContractValidator
+Aunque tenemos validaciones básicas, el MVP.md especifica la implementación de un esquema formal (tipo JSON Schema) para:
+
+Validar tipos de datos de forma más estricta.
+Verificar que los valores por defecto (default) coincidan con el tipo de campo.
+Validar restricciones de longitud y regex de manera centralizada.
+2. Actualización de Documentación (README.md)
+El criterio de aceptación #5 del DoD (Definition of Done) exige que el README.md contenga los pasos exactos para reproducir la generación. Actualmente falta:
+
+Guía de uso de los nuevos comandos (watch, format).
+Documentación de la estructura de carpetas generada (Clean Architecture).
+3. Refinamiento de Mapeos Complejos
+El Mapper actual es un stub básico. Falta:
+
+Soporte para mapeo de colecciones (has_many) de forma automática.
+Manejo de fechas (DateTimeImmutable) en el sentido inverso (Entity -> Array).
+4. Registro de "Prompt Hash" en Metadatos
+El MetadataManager registra el hash del contrato y el commit, pero no el hash de los templates/prompts utilizados, lo cual es vital para la trazabilidad de la IA según la sección "Notas operativas" de MVP.md.
+
+¿Deseas que comencemos con la implementación del esquema formal en el Validador? Es el "siguiente paso inmediato" marcado en tu plan.

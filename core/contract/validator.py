@@ -36,8 +36,8 @@ class ContractValidator:
 
         # Entities
         entities = contract.get("entities")
-        if entities is None:
-             raise ValueError("Contract must define 'entities' as a mapping of name -> fields")
+        if entities is None or not isinstance(entities, dict) or not entities:
+             raise ValueError("Contract must define a non-empty 'entities' mapping")
 
         for entity_name, fields in entities.items():
             if not isinstance(fields, dict):
@@ -64,13 +64,18 @@ class ContractValidator:
                     if "type" not in field_def:
                         raise ValueError(f"Field '{field_name}' in '{entity_name}' must specify 'type'")
                     ftype = field_def["type"]
+                    enum_name = None
                     if ftype == "enum":
                         enum_name = field_def.get("enum")
                         if not enum_name or enum_name not in enums:
                             raise ValueError(f"Field '{field_name}' references undefined enum '{enum_name}'")
                     else:
                         self._validate_type_reference(ftype, enums, entities, entity_name, field_name)
+                    
                     self._validate_constraints(field_def, entity_name, field_name)
+                    
+                    if "default" in field_def:
+                        self._validate_default_value(field_def["default"], ftype, enums, entity_name, field_name, enum_name)
                 else:
                     raise ValueError(f"Invalid definition for field '{field_name}' in '{entity_name}'")
 
@@ -136,3 +141,22 @@ class ContractValidator:
                 re.compile(field_def["regex"])
             except Exception:
                 raise ValueError(f"Constraint 'regex' for '{field_name}' in '{entity_name}' is not a valid regex")
+
+    def _validate_default_value(self, default: Any, ftype: str, enums: Dict[str, Any], entity_name: str, field_name: str, enum_name: str = None):
+        if default is None:
+            return
+
+        if ftype == "int" and not isinstance(default, int):
+            raise ValueError(f"Default value for '{field_name}' in '{entity_name}' must be an integer")
+        elif ftype == "string" and not isinstance(default, str):
+            raise ValueError(f"Default value for '{field_name}' in '{entity_name}' must be a string")
+        elif ftype == "bool" and not isinstance(default, bool):
+            raise ValueError(f"Default value for '{field_name}' in '{entity_name}' must be a boolean")
+        elif ftype == "float" and not isinstance(default, (int, float)):
+            raise ValueError(f"Default value for '{field_name}' in '{entity_name}' must be numeric")
+        elif ftype == "enum" or ftype in enums:
+            e_name = enum_name or ftype
+            if e_name in enums:
+                valid_values = enums[e_name].get("values", [])
+                if default not in valid_values:
+                    raise ValueError(f"Default value '{default}' for '{field_name}' in '{entity_name}' is not a valid case for enum '{e_name}'")
