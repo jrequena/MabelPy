@@ -306,3 +306,14 @@ Manejo de fechas (DateTimeImmutable) en el sentido inverso (Entity -> Array).
 El MetadataManager registra el hash del contrato y el commit, pero no el hash de los templates/prompts utilizados, lo cual es vital para la trazabilidad de la IA según la sección "Notas operativas" de MVP.md.
 
 ¿Deseas que comencemos con la implementación del esquema formal en el Validador? Es el "siguiente paso inmediato" marcado en tu plan.
+
+
+Para continuar con la evolución de Mabel, basándome en el progreso actual y los objetivos del MVP, te sugiero las siguientes opciones técnicas:
+
+Refactorización de Repositorios Eloquent: Actualmente los repositorios son básicos. Podríamos mejorarlos para que gestionen automáticamente la persistencia de relaciones (guardar un User con sus Posts) y criterios de búsqueda complejos.
+
+Soporte para Paginación y Filtros en la API: Mejorar PhpControllerGenerator y OpenApiGenerator para incluir lógica de paginación y filtrado en los endpoints de listado de forma estandarizada.
+
+Refinamiento de Value Objects (VO): Implementar reglas de negocio más complejas dentro de los VOs (ej. un VO Password que maneje el hashing o un VO Money con validación de moneda).
+
+Pruebas de Integración (PHP): Automatizar la generación de tests que prueben el flujo completo desde el Use Case hasta la base de datos (usando SQLite en memoria), asegurando que el código generado no solo sea sintácticamente correcto sino funcionalmente robusto.
