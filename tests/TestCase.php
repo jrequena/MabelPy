@@ -38,7 +38,18 @@ abstract class TestCase extends BaseTestCase
             foreach ($parameters as $parameter) {
                 $type = $parameter->getType();
                 if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
-                    $dependencies[] = $this->createMock($type->getName());
+                    $typeName = $type->getName();
+                    $typeReflection = new \ReflectionClass($typeName);
+                    if ($typeReflection->isFinal()) {
+                        // If final, try to instantiate directly or just null if it fails
+                        try {
+                            $dependencies[] = new $typeName();
+                        } catch (\Throwable $e) {
+                            $dependencies[] = null;
+                        }
+                    } else {
+                        $dependencies[] = $this->createMock($typeName);
+                    }
                 } else {
                     $dependencies[] = null;
                 }
@@ -46,6 +57,11 @@ abstract class TestCase extends BaseTestCase
             
             return $reflection->newInstanceArgs($dependencies);
         } catch (\Throwable $e) {
+            $reflection = new \ReflectionClass($abstract);
+            if ($reflection->isFinal()) {
+                 // Final classes cannot be mocked, throw the original error or try to instantiate
+                 throw $e;
+            }
             return $this->createMock($abstract);
         }
     }
