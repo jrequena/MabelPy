@@ -35,12 +35,33 @@ components:
         {{ field | replace('?', '') }}:
           {{ type | to_openapi_type }}
 {% endfor %}
+{% if uc.is_list %}
+        page:
+          type: integer
+          default: 1
+        per_page:
+          type: integer
+          default: 15
+{% endif %}
     {{ uc_name }}Response:
       type: object
-      # Simplified response schema
       properties:
-        data:
+{% if uc.is_list %}
+        items:
+          type: array
+          items:
+            {{ uc.output | to_openapi_type }}
+        meta:
           type: object
+          properties:
+            total: { type: integer }
+            per_page: { type: integer }
+            current_page: { type: integer }
+            last_page: { type: integer }
+{% else %}
+        data:
+          {{ uc.output | to_openapi_type }}
+{% endif %}
 {% endfor %}
 {% for entity_name, entity in entities.items() %}
     {{ entity_name }}:

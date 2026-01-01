@@ -55,6 +55,7 @@ class PhpEloquentRepositoryGenerator(BaseGenerator):
             model_import = f"{namespace}\\{model_name}"
             entity_import = f"{base_ns}\\{domain_suffix.replace('/', '\\')}\\{entity_name}"
             mapper_import = f"{base_ns}\\{mapper_suffix.replace('/', '\\')}\\{mapper_name}"
+            paginated_result_import = f"{base_ns}\\{interface_ns_suffix.replace('/', '\\')}\\PaginatedResult"
             
             context = {
                 "namespace": namespace,
@@ -68,7 +69,7 @@ class PhpEloquentRepositoryGenerator(BaseGenerator):
                 "model_name": model_name,
                 "model_import": model_import,
                 "relationships": relationships,
-                "imports": ["Illuminate\\Support\\Facades\\DB"]
+                "imports": ["Illuminate\\Support\\Facades\\DB", paginated_result_import]
             }
             
             template = self.load_template("eloquent_repository.php.tpl")

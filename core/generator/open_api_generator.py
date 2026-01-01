@@ -17,8 +17,10 @@ class OpenApiGenerator(BaseGenerator):
         prepared_use_cases = {}
         for name, uc in use_cases.items():
             entity_name = uc.get("entity", list(entities.keys())[0] if entities else "Default")
+            is_list = name.startswith(("List", "GetAll", "Search"))
             prepared_use_cases[name] = {
                 **uc,
+                "is_list": is_list,
                 "entity": entity_name,
                 "entity_path": entity_name.lower().replace("_", "-"),
                 "name_path": name.lower().replace("_", "-")

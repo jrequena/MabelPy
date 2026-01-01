@@ -47,11 +47,19 @@ class PhpControllerGenerator(BaseGenerator):
         
         inputs = uc_def.get("input", {})
         request_fields = [f.replace("?", "") for f in inputs.keys()]
+        
+        is_list = uc_name.startswith(("List", "GetAll", "Search"))
+        if is_list:
+            if "page" not in request_fields:
+                request_fields.append("page")
+            if "per_page" not in request_fields:
+                request_fields.append("per_page")
 
         template = self.load_template("controller.php.tpl")
         context = {
             "namespace": target_ns,
             "class_name": class_name,
+            "is_list": is_list,
             "request_class": request_class,
             "request_full_class": f"{request_ns}\\{request_class}",
             "use_case_class": use_case_class,

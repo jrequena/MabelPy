@@ -21,6 +21,9 @@ class PhpRepositoryGenerator(BaseGenerator):
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         entity_import = f"{base_ns}\\{domain_suffix.replace('/', '\\')}\\{entity_name}"
         
+        # Ensure PaginatedResult exists in the Domain/Repository namespace
+        self._generate_paginated_result(namespace, output_dir / interface_suffix)
+
         context = {
             "namespace": namespace,
             "class_name": f"{entity_name}Repository",
@@ -36,3 +39,11 @@ class PhpRepositoryGenerator(BaseGenerator):
         file_path = target_dir / f"{entity_name}Repository.php"
         file_path.write_text(content)
         return file_path
+
+    def _generate_paginated_result(self, namespace: str, target_dir: Path):
+        target_dir.mkdir(parents=True, exist_ok=True)
+        file_path = target_dir / "PaginatedResult.php"
+        if not file_path.exists():
+            template = self.load_template("paginated_result.php.tpl")
+            content = self.render(template, {"namespace": namespace})
+            file_path.write_text(content)

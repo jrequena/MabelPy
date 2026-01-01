@@ -16,7 +16,7 @@ final class {{ class_name }} extends Controller
     {
         $input = new UseCaseRequest(
             {% for field in request_fields %}
-            {{ field }}: $request->input('{{ field }}'){% if not loop.last %},{% endif %}
+            {{ field }}: {% if is_list and (field == 'page' or field == 'per_page') %}(int) ($request->input('{{ field }}', {{ '1' if field == 'page' else '15' }})){% else %}$request->input('{{ field }}'){% endif %}{% if not loop.last %},{% endif %}
             {% endfor %}
         );
 

@@ -53,6 +53,32 @@ final class {{ class_name }} implements {{ interface_name }}
             ->toArray();
     }
 
+    public function paginate(int $page = 1, int $perPage = 15): PaginatedResult
+    {
+        $paginator = $this->model
+{% if relationships %}
+            ->with([
+{% for rel in relationships %}
+                '{{ rel.name }}',
+{% endfor %}
+            ])
+{% endif %}
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $items = array_map(
+            fn(array $item) => {{ mapper_name }}::fromArray($item),
+            $paginator->getCollection()->toArray()
+        );
+
+        return new PaginatedResult(
+            $items,
+            (int) $paginator->total(),
+            (int) $paginator->perPage(),
+            (int) $paginator->currentPage(),
+            (int) $paginator->lastPage()
+        );
+    }
+
     public function save({{ entity_name }} $entity): void
     {
         $data = {{ mapper_name }}::toArray($entity);
