@@ -12,6 +12,41 @@ class PhpTestGenerator(BaseGenerator):
         self._generate_vo_tests(contract)
         self._generate_mapper_test(contract)
         self._generate_use_case_tests(contract)
+        self._generate_repository_test(contract)
+
+    def _generate_repository_test(self, contract: dict):
+        template = self.load_template("test_repository.php.tpl")
+        entity_name = contract["entity"]["name"]
+        base_ns = self.config.project_namespace
+        test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
+        namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}\\{entity_name}"
+        
+        repo_suffix = self.config.get_generator_config("repository").get("namespace_suffix", "Infrastructure/Repository")
+        repo_ns = f"{base_ns}\\{repo_suffix.replace('/', '\\')}"
+        
+        domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
+        entity_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}"
+        
+        fields_data = self._prepare_fields(contract["fields"], entity_ns, contract.get("enums", {}))
+        
+        imports = [
+            f"{entity_ns}\\{entity_name}",
+            f"{repo_ns}\\Eloquent{entity_name}Repository"
+        ]
+        for f in fields_data:
+            if f.get("import"):
+                imports.append(f["import"])
+        imports = sorted(list(set(imports)))
+
+        context = {
+            "namespace": namespace,
+            "class_name": f"Eloquent{entity_name}Repository",
+            "entity_name": entity_name,
+            "imports": imports,
+            "fields": fields_data
+        }
+        content = self.render(template, context)
+        self._write_test_file(entity_name, f"Eloquent{entity_name}RepositoryTest.php", content)
 
     def _generate_entity_test(self, contract: dict):
         template = self.load_template("test_entity.php.tpl")
@@ -193,7 +228,8 @@ class PhpTestGenerator(BaseGenerator):
         for field in fields:
             name = field["name"]
             raw_type = field.get("type")
-            f_data = {"name": name, "import": None}
+            is_relation = any(k in field for k in ["belongs_to", "has_one", "has_many"])
+            f_data = {"name": name, "raw_name": name, "import": None, "is_relation": is_relation}
             if "has_many" in field:
                 f_data["sample_value"] = "[]"
             elif "belongs_to" in field or "has_one" in field:

@@ -8,13 +8,16 @@ namespace {{ namespace }};
 use {{ import }};
 {% endfor %}
 
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
 final class {{ class_name }}Test extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_can_be_instantiated(): void
     {
-        $repository = $this->createMock({{ repository_name }}::class);
-        $useCase = new {{ class_name }}($repository);
-        
+        $useCase = app({{ class_name }}::class);
         $this->assertInstanceOf({{ class_name }}::class, $useCase);
     }
 }
