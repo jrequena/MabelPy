@@ -8,6 +8,8 @@ namespace {{ namespace }};
 use {{ import }};
 {% endfor %}
 
+use {{ base_test_namespace }}\TestCase;
+
 final class {{ class_name }}Test extends TestCase
 {
     public function test_can_be_instantiated(): void

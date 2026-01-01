@@ -7,6 +7,7 @@ namespace {{ namespace }};
 {% for import in imports %}
 use {{ import }};
 {% endfor %}
+use {{ base_test_namespace }}\TestCase;
 
 final class {{ class_name }}Test extends TestCase
 {

@@ -8,7 +8,7 @@ namespace {{ namespace }};
 use {{ import }};
 {% endfor %}
 
-use Tests\TestCase;
+use {{ base_test_namespace }}\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 final class {{ class_name }}Test extends TestCase

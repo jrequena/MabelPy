@@ -6,7 +6,7 @@ namespace App\Tests\Post;
 
 use App\Domain\Post;
 use App\Infrastructure\Mapper\PostMapper;
-use PHPUnit\Framework\TestCase;
+use App\Tests\TestCase;
 
 final class PostMapperTest extends TestCase
 {

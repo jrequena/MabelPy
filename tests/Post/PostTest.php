@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Post;
 
 use App\Domain\Post;
-use PHPUnit\Framework\TestCase;
+use App\Tests\TestCase;
 
 final class PostTest extends TestCase
 {

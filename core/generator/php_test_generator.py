@@ -8,11 +8,31 @@ class PhpTestGenerator(BaseGenerator):
         self.config = config
 
     def generate(self, contract: dict, output_dir: Path):
+        self._ensure_base_test_case()
         self._generate_entity_test(contract)
         self._generate_vo_tests(contract)
         self._generate_mapper_test(contract)
         self._generate_use_case_tests(contract)
         self._generate_repository_test(contract)
+
+    def _ensure_base_test_case(self):
+        base_ns = self.config.project_namespace
+        test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
+        namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}"
+        
+        test_root = Path(self.config.get("paths.tests", "tests")).absolute()
+        test_case_path = test_root / "TestCase.php"
+        
+        if not test_case_path.exists():
+            template = self.load_template("test_case.php.tpl")
+            content = self.render(template, {"namespace": namespace})
+            test_root.mkdir(parents=True, exist_ok=True)
+            test_case_path.write_text(content)
+
+    def _get_base_test_namespace(self):
+        base_ns = self.config.project_namespace
+        test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
+        return f"{base_ns}\\{test_suffix.replace('/', '\\')}"
 
     def _generate_repository_test(self, contract: dict):
         template = self.load_template("test_repository.php.tpl")
@@ -40,6 +60,7 @@ class PhpTestGenerator(BaseGenerator):
 
         context = {
             "namespace": namespace,
+            "base_test_namespace": self._get_base_test_namespace(),
             "class_name": f"Eloquent{entity_name}Repository",
             "entity_name": entity_name,
             "imports": imports,
@@ -66,6 +87,7 @@ class PhpTestGenerator(BaseGenerator):
         
         context = {
             "namespace": namespace,
+            "base_test_namespace": self._get_base_test_namespace(),
             "class_name": entity_name,
             "imports": imports,
             "fields": fields_data
@@ -93,6 +115,7 @@ class PhpTestGenerator(BaseGenerator):
                     sample_value = "'123e4567-e89b-12d3-a456-426614174000'"
                 context = {
                     "namespace": namespace,
+                    "base_test_namespace": self._get_base_test_namespace(),
                     "class_name": vo_name,
                     "vo_import": f"{vo_ns}\\{vo_name}",
                     "sample_value": sample_value
@@ -120,6 +143,7 @@ class PhpTestGenerator(BaseGenerator):
         
         context = {
             "namespace": namespace,
+            "base_test_namespace": self._get_base_test_namespace(),
             "class_name": f"{entity_name}Mapper",
             "entity_name": entity_name,
             "imports": imports,
@@ -164,6 +188,7 @@ class PhpTestGenerator(BaseGenerator):
                 
             context = {
                 "namespace": namespace,
+                "base_test_namespace": self._get_base_test_namespace(),
                 "class_name": full_class_name,
                 "repository_name": f"{entity_name}Repository",
                 "imports": imports

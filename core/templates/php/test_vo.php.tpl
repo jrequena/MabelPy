@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace {{ namespace }};
 
-use PHPUnit\Framework\TestCase;
+use {{ base_test_namespace }}\TestCase;
 use {{ vo_import }};
 
 final class {{ class_name }}Test extends TestCase
