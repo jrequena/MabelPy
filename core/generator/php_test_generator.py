@@ -41,7 +41,7 @@ class PhpTestGenerator(BaseGenerator):
         test_suffix = self.config.get_generator_config("tests").get("namespace_suffix", "Tests")
         namespace = f"{base_ns}\\{test_suffix.replace('/', '\\')}\\{entity_name}"
         
-        repo_suffix = self.config.get_generator_config("repository").get("namespace_suffix", "Infrastructure/Repository")
+        repo_suffix = "Infrastructure/Persistence/Eloquent"
         repo_ns = f"{base_ns}\\{repo_suffix.replace('/', '\\')}"
         
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")

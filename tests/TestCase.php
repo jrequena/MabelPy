@@ -23,14 +23,29 @@ abstract class TestCase extends BaseTestCase
             return \app($abstract);
         }
         
-        // Manual instantiation for standalone (stubbed)
-        // This is a naive attempt to unblock; real repositories need a model
+        // Manual instantiation for standalone (stubbed) using Reflection
         try {
-            return new $abstract(new class {
-                public function __call($name, $args) { return $this; }
-                public static function __callStatic($name, $args) { return new static; }
-            });
-        } catch (\Exception $e) {
+            $reflection = new \ReflectionClass($abstract);
+            $constructor = $reflection->getConstructor();
+            
+            if (null === $constructor) {
+                return new $abstract();
+            }
+            
+            $parameters = $constructor->getParameters();
+            $dependencies = [];
+            
+            foreach ($parameters as $parameter) {
+                $type = $parameter->getType();
+                if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
+                    $dependencies[] = $this->createMock($type->getName());
+                } else {
+                    $dependencies[] = null;
+                }
+            }
+            
+            return $reflection->newInstanceArgs($dependencies);
+        } catch (\Throwable $e) {
             return $this->createMock($abstract);
         }
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Post;
 
 use App\Domain\Post;
-use App\Infrastructure\Repository\EloquentPostRepository;
+use App\Infrastructure\Persistence\Eloquent\EloquentPostRepository;
 use App\Tests\TestCase;
 use App\Tests\RefreshDatabase;
 
