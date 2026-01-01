@@ -80,7 +80,7 @@ class PhpMapperGenerator(BaseGenerator):
                  f_data["import"] = f"{mapper_ns}\\{target_mapper}"
                  f_data["extra_imports"].append(f"{domain_ns}\\{target}")
                  
-                 f_data["from_array_line"] = f"array_map(fn(array $item) => {target_mapper}::fromArray($item), $data['{name}'] ?? [])"
+                 f_data["from_array_line"] = f"array_map(fn(array $item) => {target_mapper}::fromArray($item), (array) ($data['{name}'] ?? []))"
                  f_data["to_array_line"] = f"array_map(fn({target} $item) => {target_mapper}::toArray($item), $entity->{name})"
                  prepared.append(f_data)
                  continue
@@ -91,8 +91,11 @@ class PhpMapperGenerator(BaseGenerator):
                  f_data["import"] = f"{mapper_ns}\\{target_mapper}"
                  f_data["extra_imports"].append(f"{domain_ns}\\{target}")
 
-                 if nullable:
-                     f_data["from_array_line"] = f"isset($data['{name}']) ? {target_mapper}::fromArray($data['{name}']) : null"
+                 # Relationships are nullable by default in Mabel if not specified
+                 is_nullable = field.get("nullable", True)
+
+                 if is_nullable:
+                     f_data["from_array_line"] = f"isset($data['{name}']) && $data['{name}'] !== null ? {target_mapper}::fromArray($data['{name}']) : null"
                      f_data["to_array_line"] = f"$entity->{name} !== null ? {target_mapper}::toArray($entity->{name}) : null"
                  else:
                      f_data["from_array_line"] = f"{target_mapper}::fromArray($data['{name}'])"

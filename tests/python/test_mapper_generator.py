@@ -35,11 +35,11 @@ def test_mapper_generation_with_relationships(config, tmp_path):
     assert "use App\\Infrastructure\\Mapper\\CommentMapper;" in content
     
     # Check fromArray
-    assert "UserMapper::fromArray($data['author'])" in content
-    assert "array_map(fn(array $item) => CommentMapper::fromArray($item), $data['comments'] ?? [])" in content
+    assert "isset($data['author']) && $data['author'] !== null ? UserMapper::fromArray($data['author']) : null" in content
+    assert "array_map(fn(array $item) => CommentMapper::fromArray($item), (array) ($data['comments'] ?? []))" in content
     assert "new \\DateTimeImmutable($data['createdAt'])" in content
     
     # Check toArray
-    assert "UserMapper::toArray($entity->author)" in content
+    assert "$entity->author !== null ? UserMapper::toArray($entity->author) : null" in content
     assert "array_map(fn(Comment $item) => CommentMapper::toArray($item), $entity->comments)" in content
     assert "$entity->createdAt->format(\\DateTimeInterface::ATOM)" in content
