@@ -15,11 +15,13 @@ class MetadataManager:
         
         commit_hash = self._get_git_commit()
         timestamp = datetime.now().isoformat()
+        prompt_hash = self._calculate_prompt_hash()
         
         entry = {
             "timestamp": timestamp,
             "contract": str(contract_path),
             "contract_hash": contract_hash,
+            "prompt_hash": prompt_hash,
             "commit": commit_hash
         }
         
@@ -28,6 +30,18 @@ class MetadataManager:
         
         with open(self.metadata_file, "w") as f:
             json.dump(history, f, indent=4)
+
+    def _calculate_prompt_hash(self):
+        # Hash all templates to ensure generation logic reproducibility
+        hasher = hashlib.sha256()
+        template_dir = Path(__file__).parent.parent / "templates"
+        
+        # Sort files to ensure deterministic hash
+        tpl_files = sorted(list(template_dir.rglob("*.tpl")))
+        for tpl in tpl_files:
+            hasher.update(tpl.read_bytes())
+            
+        return hasher.hexdigest()
 
     def _get_git_commit(self):
         try:
