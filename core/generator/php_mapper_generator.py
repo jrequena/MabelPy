@@ -26,6 +26,8 @@ class PhpMapperGenerator(BaseGenerator):
         for f in fields_data:
             if f.get("import"):
                 imports.append(f["import"])
+            if f.get("extra_imports"):
+                imports.extend(f["extra_imports"])
 
         imports_block = "\n".join([f"use {imp};" for imp in sorted(list(set(imports))) if imp])
         if imports_block:
@@ -56,6 +58,10 @@ class PhpMapperGenerator(BaseGenerator):
         prepared = []
         auto_vos = self.config.get("generators.value_objects.auto_types", [])
         
+        mapper_config = self.config.get_generator_config("mapper")
+        mapper_suffix = mapper_config.get("namespace_suffix", "Infrastructure/Mapper")
+        mapper_ns = f"{self.config.project_namespace}\\{mapper_suffix.replace('/', '\\')}"
+
         for field in fields:
             name = field["name"]
             raw_type = field.get("type")
@@ -63,20 +69,34 @@ class PhpMapperGenerator(BaseGenerator):
             
             f_data = {
                 "raw_name": name,
-                "import": None
+                "import": None,
+                "extra_imports": []
             }
 
             # Handle Relationships
             if "has_many" in field:
-                 f_data["from_array_line"] = f"[] // TODO: Map collection {field['has_many']}"
-                 f_data["to_array_line"] = f"[] // TODO: Map collection {field['has_many']}"
+                 target = field["has_many"]
+                 target_mapper = f"{target}Mapper"
+                 f_data["import"] = f"{mapper_ns}\\{target_mapper}"
+                 f_data["extra_imports"].append(f"{domain_ns}\\{target}")
+                 
+                 f_data["from_array_line"] = f"array_map(fn(array $item) => {target_mapper}::fromArray($item), $data['{name}'] ?? [])"
+                 f_data["to_array_line"] = f"array_map(fn({target} $item) => {target_mapper}::toArray($item), $entity->{name})"
                  prepared.append(f_data)
                  continue
 
             if "belongs_to" in field or "has_one" in field:
                  target = field.get("belongs_to") or field.get("has_one")
-                 f_data["from_array_line"] = f"null // TODO: Map relation {target}"
-                 f_data["to_array_line"] = f"null // TODO: Map relation {target}"
+                 target_mapper = f"{target}Mapper"
+                 f_data["import"] = f"{mapper_ns}\\{target_mapper}"
+                 f_data["extra_imports"].append(f"{domain_ns}\\{target}")
+
+                 if nullable:
+                     f_data["from_array_line"] = f"isset($data['{name}']) ? {target_mapper}::fromArray($data['{name}']) : null"
+                     f_data["to_array_line"] = f"$entity->{name} !== null ? {target_mapper}::toArray($entity->{name}) : null"
+                 else:
+                     f_data["from_array_line"] = f"{target_mapper}::fromArray($data['{name}'])"
+                     f_data["to_array_line"] = f"{target_mapper}::toArray($entity->{name})"
                  prepared.append(f_data)
                  continue
 
