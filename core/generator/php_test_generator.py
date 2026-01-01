@@ -79,7 +79,7 @@ class PhpTestGenerator(BaseGenerator):
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         entity_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}"
         fields_data = self._prepare_fields(contract["fields"], entity_ns, contract.get("enums", {}))
-        imports = [f"{entity_ns}\\{entity_name}", "PHPUnit\\Framework\\TestCase"]
+        imports = [f"{entity_ns}\\{entity_name}"]
         for f in fields_data:
             if f.get("import"):
                 imports.append(f["import"])
@@ -135,7 +135,7 @@ class PhpTestGenerator(BaseGenerator):
         domain_suffix = self.config.get_generator_config("entity").get("namespace_suffix", "Domain")
         entity_ns = f"{base_ns}\\{domain_suffix.replace('/', '\\')}"
         fields_data = self._prepare_fields_for_mapper(contract["fields"], entity_ns, contract.get("enums", {}))
-        imports = [f"{entity_ns}\\{entity_name}", f"{mapper_ns}\\{entity_name}Mapper", "PHPUnit\\Framework\\TestCase"]
+        imports = [f"{entity_ns}\\{entity_name}", f"{mapper_ns}\\{entity_name}Mapper"]
         for f in fields_data:
             if f.get("import"):
                 imports.append(f["import"])
@@ -181,8 +181,7 @@ class PhpTestGenerator(BaseGenerator):
             
             imports = [
                 f"{use_case_ns}\\{full_class_name}", 
-                f"{repo_ns}\\{entity_name}Repository",
-                "PHPUnit\\Framework\\TestCase"
+                f"{repo_ns}\\{entity_name}Repository"
             ]
             imports = sorted(list(set(imports)))
                 

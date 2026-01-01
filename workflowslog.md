@@ -11,5 +11,5 @@ Run vendor/bin/phpunit
     COMPOSER_PROCESS_TIMEOUT: 0
     COMPOSER_NO_INTERACTION: 1
     COMPOSER_NO_AUDIT: 1
-PHP Fatal error:  Trait "Illuminate\Foundation\Testing\RefreshDatabase" not found in /home/runner/work/MabelPy/MabelPy/tests/Post/EloquentPostRepositoryTest.php on line 12
+PHP Fatal error:  Cannot use PHPUnit\Framework\TestCase as TestCase because the name is already in use in /home/runner/work/MabelPy/MabelPy/tests/Post/PostMapperTest.php on line 10
 Error: Process completed with exit code 255.
