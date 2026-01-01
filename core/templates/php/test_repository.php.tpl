@@ -19,7 +19,7 @@ final class {{ class_name }}Test extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = app({{ class_name }}::class);
+        $this->repository = $this->app({{ class_name }}::class);
     }
 
     public function test_can_save_and_find_entity(): void

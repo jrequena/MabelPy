@@ -17,7 +17,7 @@ final class {{ class_name }}Test extends TestCase
 
     public function test_can_be_instantiated(): void
     {
-        $useCase = app({{ class_name }}::class);
+        $useCase = $this->app({{ class_name }}::class);
         $this->assertInstanceOf({{ class_name }}::class, $useCase);
     }
 }

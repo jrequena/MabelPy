@@ -20,7 +20,7 @@ abstract class TestCase extends BaseTestCase
     protected function app(string $abstract)
     {
         if (function_exists('app')) {
-            return app($abstract);
+            return \app($abstract);
         }
         
         // Manual instantiation for standalone (stubbed)
