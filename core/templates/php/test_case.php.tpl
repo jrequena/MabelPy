@@ -57,13 +57,14 @@ abstract class TestCase extends BaseTestCase
             try {
                 if (!function_exists('app') || !(@\app() instanceof \Illuminate\Container\Container)) {
                     $container = new \Illuminate\Container\Container();
-                    $container->singleton('db', function() {
-                        return new class {
-                            public function transaction($callback) { return $callback(); }
-                            public function connection($n = null) { return $this; }
-                            public function __call($m, $a) { return $this; }
-                        };
-                    });
+                    $dbMock = new class {
+                        public function transaction($callback) { return $callback(); }
+                        public function connection($n = null) { return $this; }
+                        public function getName() { return 'default'; }
+                        public function __call($m, $a) { return $this; }
+                    };
+                    $container->singleton('db', fn() => $dbMock);
+                    $container->alias('db', 'db.factory');
                     \Illuminate\Support\Facades\Facade::setFacadeApplication($container);
                 }
             } catch (\Throwable $e) {
