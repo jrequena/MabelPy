@@ -11,10 +11,5 @@ Run vendor/bin/phpunit
     COMPOSER_PROCESS_TIMEOUT: 0
     COMPOSER_NO_INTERACTION: 1
     COMPOSER_NO_AUDIT: 1
-PHPUnit 10.5.60 by Sebastian Bergmann and contributors.
-
-Runtime:       PHP 8.2.29
-Configuration: /home/runner/work/MabelPy/MabelPy/phpunit.xml
-
-PHP Fatal error:  Class Illuminate\Database\ConnectionInterface@anonymous contains 18 abstract methods and must therefore be declared abstract or implement the remaining methods (Illuminate\Database\ConnectionInterface::raw, Illuminate\Database\ConnectionInterface::selectOne, Illuminate\Database\ConnectionInterface::select, ...) in /home/runner/work/MabelPy/MabelPy/tests/TestCase.php on line 110
+PHP Fatal error:  Could not check compatibility between App\Tests\DummyConnection::transaction(App\Tests\Closure $callback, $attempts = 1) and Illuminate\Database\ConnectionInterface::transaction(Closure $callback, $attempts = 1), because class App\Tests\Closure is not available in /home/runner/work/MabelPy/MabelPy/tests/TestCase.php(132) : eval()'d code on line 21
 Error: Process completed with exit code 255.

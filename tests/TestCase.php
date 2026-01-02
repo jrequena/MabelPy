@@ -96,6 +96,10 @@ if (!function_exists('App\Tests\createDummyInterface')) {
                     if ($type instanceof \ReflectionNamedType) {
                         $typeName = $type->getName();
                         if ($typeName !== 'mixed' && (PHP_VERSION_ID >= 80000 || $typeName !== 'static')) {
+                            // Prefix with \ if it's a class/interface
+                            if (!$type->isBuiltin()) {
+                                $typeName = '\\' . ltrim($typeName, '\\');
+                            }
                             $p .= ($type->allowsNull() ? '?' : '') . $typeName . ' ';
                         }
                     }
@@ -109,16 +113,32 @@ if (!function_exists('App\Tests\createDummyInterface')) {
                 $params[] = $p;
             }
             $returnType = '';
+            $returnValue = '$this';
             if (PHP_VERSION_ID >= 70000 && $method->hasReturnType()) {
                 $rType = $method->getReturnType();
                 if ($rType instanceof \ReflectionNamedType) {
                     $rName = $rType->getName();
+                    if ($rName === 'void') {
+                        $returnValue = '';
+                    } elseif ($rName === 'bool') {
+                        $returnValue = 'true';
+                    } elseif ($rName === 'array') {
+                        $returnValue = '[]';
+                    } elseif ($rName === 'int' || $rName === 'float') {
+                        $returnValue = '0';
+                    } elseif ($rName === 'string') {
+                        $returnValue = "''";
+                    }
+
                     if ($rName !== 'mixed' && $rName !== 'static') {
+                        if (!$rType->isBuiltin()) {
+                            $rName = '\\' . ltrim($rName, '\\');
+                        }
                         $returnType = ': ' . ($rType->allowsNull() ? '?' : '') . $rName;
                     }
                 }
             }
-            $methods .= "public function {$method->getName()}(" . implode(', ', $params) . ")$returnType { return " . '$this' . "; }\n";
+            $methods .= "public function {$method->getName()}(" . implode(', ', $params) . ")$returnType { " . ($returnValue !== '' ? "return $returnValue;" : "") . " }\n";
         }
         $parts = explode('\\', $className);
         $shortName = array_pop($parts);
