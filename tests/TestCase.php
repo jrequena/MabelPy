@@ -128,6 +128,9 @@ if (!function_exists('App\Tests\createDummyInterface')) {
                         $returnValue = '0';
                     } elseif ($rName === 'string') {
                         $returnValue = "''";
+                    } elseif (!$rType->isBuiltin() && $rName !== $rc->getName() && $rName !== 'static' && $rName !== 'self') {
+                        $fullRName = '\\' . ltrim($rName, '\\');
+                        $returnValue = "(\$this instanceof $fullRName ? \$this : (class_exists('$fullRName') ? new $fullRName() : null))";
                     }
 
                     if ($rName !== 'mixed' && $rName !== 'static') {
