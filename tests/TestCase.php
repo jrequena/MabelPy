@@ -66,11 +66,16 @@ abstract class TestCase extends BaseTestCase
             $dependencies = [];
             
             foreach ($parameters as $parameter) {
+                if ($parameter->isDefaultValueAvailable()) {
+                    $dependencies[] = $parameter->getDefaultValue();
+                    continue;
+                }
+
                 $type = $parameter->getType();
                 if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
                     $dependencies[] = $this->app($type->getName());
                 } else {
-                    $dependencies[] = null;
+                    $dependencies[] = ($type instanceof \ReflectionNamedType && $type->getName() === 'array') ? [] : null;
                 }
             }
             

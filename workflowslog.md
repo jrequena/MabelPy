@@ -23,35 +23,35 @@ Time: 00:00.030, Memory: 10.00 MB
 There were 4 errors:
 
 1) App\Tests\Post\EloquentPostRepositoryTest::test_can_save_and_find_entity
-Error: Class "Illuminate\Database\Eloquent\Model" not found
+TypeError: Illuminate\Database\Eloquent\Model::__construct(): Argument #1 ($attributes) must be of type array, null given
 
-/home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/Post.php:9
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:56
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:48
+/home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:234
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:80
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:74
 /home/runner/work/MabelPy/MabelPy/tests/Post/EloquentPostRepositoryTest.php:21
 
 2) App\Tests\Post\EloquentPostRepositoryTest::test_can_delete_entity
-Error: Class "Illuminate\Database\Eloquent\Model" not found
+TypeError: Illuminate\Database\Eloquent\Model::__construct(): Argument #1 ($attributes) must be of type array, null given
 
-/home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/Post.php:9
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:56
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:48
+/home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:234
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:80
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:74
 /home/runner/work/MabelPy/MabelPy/tests/Post/EloquentPostRepositoryTest.php:21
 
 3) App\Tests\User\EloquentUserRepositoryTest::test_can_save_and_find_entity
-Error: Class "Illuminate\Database\Eloquent\Model" not found
+TypeError: Illuminate\Database\Eloquent\Model::__construct(): Argument #1 ($attributes) must be of type array, null given
 
-/home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/User.php:9
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:56
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:48
+/home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:234
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:80
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:74
 /home/runner/work/MabelPy/MabelPy/tests/User/EloquentUserRepositoryTest.php:22
 
 4) App\Tests\User\EloquentUserRepositoryTest::test_can_delete_entity
-Error: Class "Illuminate\Database\Eloquent\Model" not found
+TypeError: Illuminate\Database\Eloquent\Model::__construct(): Argument #1 ($attributes) must be of type array, null given
 
-/home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/User.php:9
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:56
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:48
+/home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:234
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:80
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:74
 /home/runner/work/MabelPy/MabelPy/tests/User/EloquentUserRepositoryTest.php:22
 
 ERRORS!
