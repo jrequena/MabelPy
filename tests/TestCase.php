@@ -63,25 +63,23 @@ abstract class TestCase extends BaseTestCase
         }
 
         if (class_exists('Illuminate\Support\Facades\Facade')) {
-            try {
-                if (!function_exists('app') || !(@\app() instanceof \Illuminate\Container\Container)) {
-                    $container = new \Illuminate\Container\Container();
-                    $dbMock = new class {
-                        public function transaction($callback) { return $callback(); }
-                        public function connection($n = null) { return $this; }
-                        public function getName() { return 'default'; }
-                        public function __call($m, $a) { return $this; }
-                    };
-                    $container->singleton('db', fn() => $dbMock);
-                    $container->alias('db', 'db.factory');
-                    \Illuminate\Support\Facades\Facade::setFacadeApplication($container);
-                    
-                    if (class_exists('Illuminate\Database\Eloquent\Model')) {
-                        \Illuminate\Database\Eloquent\Model::setConnectionResolver($dbMock);
-                    }
+            if (!function_exists('app') || !(@\app() instanceof \Illuminate\Container\Container)) {
+                $container = new \Illuminate\Container\Container();
+                $dbMock = new class {
+                    public function transaction($callback) { return $callback(); }
+                    public function connection($n = null) { return $this; }
+                    public function getDefaultConnection() { return 'default'; }
+                    public function setDefaultConnection($name) {}
+                    public function getName() { return 'default'; }
+                    public function __call($m, $a) { return $this; }
+                };
+                $container->singleton('db', fn() => $dbMock);
+                $container->alias('db', 'db.factory');
+                \Illuminate\Support\Facades\Facade::setFacadeApplication($container);
+                
+                if (class_exists('Illuminate\Database\Eloquent\Model')) {
+                    \Illuminate\Database\Eloquent\Model::setConnectionResolver($dbMock);
                 }
-            } catch (\Throwable $e) {
-                // Ignore if already set or other issues
             }
         }
         
