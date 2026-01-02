@@ -41,6 +41,19 @@ if (!class_exists('Illuminate\Support\Facades\DB')) {
     }');
 }
 
+/**
+ * Mock ConnectionResolverInterface if it doesn't exist
+ */
+if (!interface_exists('Illuminate\Database\ConnectionResolverInterface')) {
+    eval('namespace Illuminate\Database { 
+        interface ConnectionResolverInterface {
+            public function connection($name = null);
+            public function getDefaultConnection();
+            public function setDefaultConnection($name);
+        }
+    }');
+}
+
 abstract class TestCase extends BaseTestCase
 {
     private static bool $initialized = false;
@@ -65,7 +78,7 @@ abstract class TestCase extends BaseTestCase
         if (class_exists('Illuminate\Support\Facades\Facade')) {
             if (!function_exists('app') || !(@\app() instanceof \Illuminate\Container\Container)) {
                 $container = new \Illuminate\Container\Container();
-                $dbMock = new class {
+                $dbMock = new class implements \Illuminate\Database\ConnectionResolverInterface {
                     public function transaction($callback) { return $callback(); }
                     public function connection($n = null) { return $this; }
                     public function getDefaultConnection() { return 'default'; }
