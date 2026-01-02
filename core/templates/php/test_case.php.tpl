@@ -66,6 +66,10 @@ abstract class TestCase extends BaseTestCase
                     $container->singleton('db', fn() => $dbMock);
                     $container->alias('db', 'db.factory');
                     \Illuminate\Support\Facades\Facade::setFacadeApplication($container);
+
+                    if (class_exists('Illuminate\Database\Eloquent\Model')) {
+                        \Illuminate\Database\Eloquent\Model::setConnectionResolver($dbMock);
+                    }
                 }
             } catch (\Throwable $e) {
                 // Ignore if already set or other issues
