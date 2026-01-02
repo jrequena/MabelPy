@@ -130,7 +130,7 @@ if (!function_exists('App\Tests\createDummyInterface')) {
                         $returnValue = "''";
                     } elseif (!$rType->isBuiltin() && $rName !== $rc->getName() && $rName !== 'static' && $rName !== 'self') {
                         $fullRName = '\\' . ltrim($rName, '\\');
-                        $returnValue = "(\$this instanceof $fullRName ? \$this : (class_exists('$fullRName') ? new $fullRName() : null))";
+                        $returnValue = "(\$this instanceof $fullRName ? \$this : \\App\\Tests\\createDummyInstance('$fullRName'))";
                     }
 
                     if ($rName !== 'mixed' && $rName !== 'static') {
@@ -147,6 +147,29 @@ if (!function_exists('App\Tests\createDummyInterface')) {
         $shortName = array_pop($parts);
         $namespace = implode('\\', $parts);
         eval(($namespace ? "namespace $namespace; " : "") . "class $shortName implements \\$interface { $methods public function __call(" . '$m, $a' . ") { return " . '$this' . "; } }");
+    }
+
+    function createDummyInstance($className) {
+        static $instances = [];
+        if (isset($instances[$className])) return $instances[$className];
+        
+        if (!class_exists($className) && !interface_exists($className)) {
+            return null;
+        }
+
+        if (interface_exists($className)) {
+            $mockName = 'App\\Tests\\Dummy' . str_replace('\\', '', $className);
+            if (!class_exists($mockName)) {
+                createDummyInterface($className, $mockName);
+            }
+            return $instances[$className] = new $mockName();
+        }
+
+        try {
+            return $instances[$className] = new $className();
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }
 

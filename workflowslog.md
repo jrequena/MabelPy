@@ -18,7 +18,7 @@ Configuration: /home/runner/work/MabelPy/MabelPy/phpunit.xml
 
 EE.....EE....                                                     13 / 13 (100%)
 
-Time: 00:00.026, Memory: 12.00 MB
+Time: 00:00.045, Memory: 12.00 MB
 
 There were 4 errors:
 
@@ -37,7 +37,7 @@ TypeError: Illuminate\Database\Query\Builder::__construct(): Argument #2 ($gramm
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/support/Traits/ForwardsCalls.php:23
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:2335
 /home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/EloquentPostRepository.php:80
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:309
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:312
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/support/Facades/Facade.php:355
 /home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/EloquentPostRepository.php:73
 /home/runner/work/MabelPy/MabelPy/tests/Post/EloquentPostRepositoryTest.php:35
@@ -57,7 +57,7 @@ TypeError: Illuminate\Database\Query\Builder::__construct(): Argument #2 ($gramm
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/support/Traits/ForwardsCalls.php:23
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:2335
 /home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/EloquentPostRepository.php:80
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:309
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:312
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/support/Facades/Facade.php:355
 /home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/EloquentPostRepository.php:73
 /home/runner/work/MabelPy/MabelPy/tests/Post/EloquentPostRepositoryTest.php:53
@@ -77,7 +77,7 @@ TypeError: Illuminate\Database\Query\Builder::__construct(): Argument #2 ($gramm
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/support/Traits/ForwardsCalls.php:23
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:2335
 /home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/EloquentUserRepository.php:77
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:309
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:312
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/support/Facades/Facade.php:355
 /home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/EloquentUserRepository.php:73
 /home/runner/work/MabelPy/MabelPy/tests/User/EloquentUserRepositoryTest.php:38
@@ -97,7 +97,7 @@ TypeError: Illuminate\Database\Query\Builder::__construct(): Argument #2 ($gramm
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/support/Traits/ForwardsCalls.php:23
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:2335
 /home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/EloquentUserRepository.php:77
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:309
+/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:312
 /home/runner/work/MabelPy/MabelPy/vendor/illuminate/support/Facades/Facade.php:355
 /home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/EloquentUserRepository.php:73
 /home/runner/work/MabelPy/MabelPy/tests/User/EloquentUserRepositoryTest.php:58
