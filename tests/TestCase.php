@@ -146,7 +146,7 @@ if (!function_exists('App\Tests\createDummyInterface')) {
         $parts = explode('\\', $className);
         $shortName = array_pop($parts);
         $namespace = implode('\\', $parts);
-        eval(($namespace ? "namespace $namespace; " : "") . "class $shortName implements \\$interface { $methods public function __call(" . '$m, $a' . ") { return " . '$this' . "; } }");
+        eval(($namespace ? "namespace $namespace; " : "") . "class $shortName implements \\$interface { $methods public function __call(" . '$m, $a' . ") { return null; } }");
     }
 
     function createDummyInstance($className) {
@@ -272,6 +272,8 @@ abstract class TestCase extends BaseTestCase
                             }
                             return $this;
                         }
+                        public function getQueryGrammar() { return null; }
+                        public function getPostProcessor() { return null; }
                     }');
                     $connMock = new \App\Tests\EnhancedConnection();
                 }
