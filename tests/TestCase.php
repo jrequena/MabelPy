@@ -54,6 +54,31 @@ if (!interface_exists('Illuminate\Database\ConnectionResolverInterface')) {
     }');
 }
 
+/**
+ * Mock ConnectionInterface if it doesn't exist
+ */
+if (!interface_exists('Illuminate\Database\ConnectionInterface')) {
+    eval('namespace Illuminate\Database { 
+        interface ConnectionInterface {
+            public function table($table, $as = null);
+            public function getName();
+            public function query();
+        }
+    }');
+}
+
+/**
+ * Mock Query Builder if it doesn't exist
+ */
+if (!class_exists('Illuminate\Database\Query\Builder')) {
+    eval('namespace Illuminate\Database\Query { 
+        class Builder {
+            public function __construct($connection, $grammar = null, $processor = null) {}
+            public function __call($m, $a) { return $this; }
+        }
+    }');
+}
+
 abstract class TestCase extends BaseTestCase
 {
     private static bool $initialized = false;
@@ -78,13 +103,33 @@ abstract class TestCase extends BaseTestCase
         if (class_exists('Illuminate\Support\Facades\Facade')) {
             if (!function_exists('app') || !(@\app() instanceof \Illuminate\Container\Container)) {
                 $container = new \Illuminate\Container\Container();
-                $dbMock = new class implements \Illuminate\Database\ConnectionResolverInterface {
+                
+                $connMock = new class implements \Illuminate\Database\ConnectionInterface {
+                    public function table($table, $as = null) { 
+                        if (class_exists(\Illuminate\Database\Query\Builder::class)) {
+                            return new \Illuminate\Database\Query\Builder($this);
+                        }
+                        return new class { public function __call($m, $a) { return $this; } };
+                    }
+                    public function getName() { return 'default'; }
+                    public function query() { 
+                        if (class_exists(\Illuminate\Database\Query\Builder::class)) {
+                            return new \Illuminate\Database\Query\Builder($this);
+                        }
+                        return new class { public function __call($m, $a) { return $this; } };
+                    }
+                    public function __call($m, $a) { return $this; }
+                };
+
+                $dbMock = new class($connMock) implements \Illuminate\Database\ConnectionResolverInterface {
+                    private $conn;
+                    public function __construct($conn) { $this->conn = $conn; }
                     public function transaction($callback) { return $callback(); }
-                    public function connection($n = null) { return $this; }
+                    public function connection($n = null) { return $this->conn; }
                     public function getDefaultConnection() { return 'default'; }
                     public function setDefaultConnection($name) {}
                     public function getName() { return 'default'; }
-                    public function __call($m, $a) { return $this; }
+                    public function __call($m, $a) { return $this->conn->$m(...$a); }
                 };
                 $container->singleton('db', fn() => $dbMock);
                 $container->alias('db', 'db.factory');
