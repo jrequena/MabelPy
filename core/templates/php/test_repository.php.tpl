@@ -27,11 +27,7 @@ final class {{ class_name }}Test extends TestCase
         // 1. Create domain entity
         $entity = new {{ entity_name }}(
 {% for field in fields %}
-{% if not field.is_relation %}
             {{ field.sample_value }},
-{% else %}
-            null, // Relation: {{ field.raw_name }}
-{% endif %}
 {% endfor %}
         );
 
@@ -49,11 +45,7 @@ final class {{ class_name }}Test extends TestCase
     {
         $entity = new {{ entity_name }}(
 {% for field in fields %}
-{% if not field.is_relation %}
             {{ field.sample_value }},
-{% else %}
-            null,
-{% endif %}
 {% endfor %}
         );
 

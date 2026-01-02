@@ -45,6 +45,33 @@ if (!class_exists('Illuminate\Support\Facades\DB')) {
 
 abstract class TestCase extends BaseTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        if (method_exists($this, 'setUpRefreshDatabase')) {
+            $this->setUpRefreshDatabase();
+        }
+
+        if (class_exists('Illuminate\Support\Facades\Facade')) {
+            try {
+                if (!function_exists('app') || !(@\app() instanceof \Illuminate\Container\Container)) {
+                    $container = new \Illuminate\Container\Container();
+                    $container->singleton('db', function() {
+                        return new class {
+                            public function transaction($callback) { return $callback(); }
+                            public function connection($n = null) { return $this; }
+                            public function __call($m, $a) { return $this; }
+                        };
+                    });
+                    \Illuminate\Support\Facades\Facade::setFacadeApplication($container);
+                }
+            } catch (\Throwable $e) {
+                // Ignore if already set or other issues
+            }
+        }
+    }
+
     /**
      * Helper to mock app() if not in Laravel
      */

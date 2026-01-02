@@ -31,7 +31,7 @@ final class EloquentUserRepositoryTest extends TestCase
             'sample',
             UserStatus::ACTIVE,
             new \DateTimeImmutable(),
-            null, // Relation: posts
+            [],
         );
 
         // 2. Save via repository
@@ -52,7 +52,7 @@ final class EloquentUserRepositoryTest extends TestCase
             'sample',
             UserStatus::ACTIVE,
             new \DateTimeImmutable(),
-            null,
+            [],
         );
 
         $this->repository->save($entity);

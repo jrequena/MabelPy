@@ -28,7 +28,7 @@ final class EloquentPostRepositoryTest extends TestCase
             1,
             'sample',
             'sample',
-            null, // Relation: user
+            null,
         );
 
         // 2. Save via repository

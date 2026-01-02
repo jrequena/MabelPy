@@ -18,41 +18,35 @@ Configuration: /home/runner/work/MabelPy/MabelPy/phpunit.xml
 
 EE.....EE....                                                     13 / 13 (100%)
 
-Time: 00:00.030, Memory: 10.00 MB
+Time: 00:00.022, Memory: 10.00 MB
 
 There were 4 errors:
 
 1) App\Tests\Post\EloquentPostRepositoryTest::test_can_save_and_find_entity
-TypeError: Illuminate\Database\Eloquent\Model::__construct(): Argument #1 ($attributes) must be of type array, null given
+RuntimeException: A facade root has not been set.
 
-/home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:234
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:80
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:74
-/home/runner/work/MabelPy/MabelPy/tests/Post/EloquentPostRepositoryTest.php:21
+/home/runner/work/MabelPy/MabelPy/vendor/illuminate/support/Facades/Facade.php:352
+/home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/EloquentPostRepository.php:73
+/home/runner/work/MabelPy/MabelPy/tests/Post/EloquentPostRepositoryTest.php:35
 
 2) App\Tests\Post\EloquentPostRepositoryTest::test_can_delete_entity
-TypeError: Illuminate\Database\Eloquent\Model::__construct(): Argument #1 ($attributes) must be of type array, null given
+RuntimeException: A facade root has not been set.
 
-/home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:234
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:80
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:74
-/home/runner/work/MabelPy/MabelPy/tests/Post/EloquentPostRepositoryTest.php:21
+/home/runner/work/MabelPy/MabelPy/vendor/illuminate/support/Facades/Facade.php:352
+/home/runner/work/MabelPy/MabelPy/src/Infrastructure/Persistence/Eloquent/EloquentPostRepository.php:73
+/home/runner/work/MabelPy/MabelPy/tests/Post/EloquentPostRepositoryTest.php:53
 
 3) App\Tests\User\EloquentUserRepositoryTest::test_can_save_and_find_entity
-TypeError: Illuminate\Database\Eloquent\Model::__construct(): Argument #1 ($attributes) must be of type array, null given
+TypeError: App\Domain\User::__construct(): Argument #6 ($posts) must be of type array, null given, called in /home/runner/work/MabelPy/MabelPy/tests/User/EloquentUserRepositoryTest.php on line 28
 
-/home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:234
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:80
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:74
-/home/runner/work/MabelPy/MabelPy/tests/User/EloquentUserRepositoryTest.php:22
+/home/runner/work/MabelPy/MabelPy/src/Domain/User.php:12
+/home/runner/work/MabelPy/MabelPy/tests/User/EloquentUserRepositoryTest.php:28
 
 4) App\Tests\User\EloquentUserRepositoryTest::test_can_delete_entity
-TypeError: Illuminate\Database\Eloquent\Model::__construct(): Argument #1 ($attributes) must be of type array, null given
+TypeError: App\Domain\User::__construct(): Argument #6 ($posts) must be of type array, null given, called in /home/runner/work/MabelPy/MabelPy/tests/User/EloquentUserRepositoryTest.php on line 49
 
-/home/runner/work/MabelPy/MabelPy/vendor/illuminate/database/Eloquent/Model.php:234
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:80
-/home/runner/work/MabelPy/MabelPy/tests/TestCase.php:74
-/home/runner/work/MabelPy/MabelPy/tests/User/EloquentUserRepositoryTest.php:22
+/home/runner/work/MabelPy/MabelPy/src/Domain/User.php:12
+/home/runner/work/MabelPy/MabelPy/tests/User/EloquentUserRepositoryTest.php:49
 
 ERRORS!
 Tests: 13, Assertions: 17, Errors: 4.
