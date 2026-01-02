@@ -43,12 +43,23 @@ if (!class_exists('Illuminate\Support\Facades\DB')) {
 
 abstract class TestCase extends BaseTestCase
 {
+    private static bool $initialized = false;
+
     protected function setUp(): void
     {
         parent::setUp();
         
+        $this->initializeEnvironment();
+
         if (method_exists($this, 'setUpRefreshDatabase')) {
             $this->setUpRefreshDatabase();
+        }
+    }
+
+    private function initializeEnvironment(): void
+    {
+        if (self::$initialized) {
+            return;
         }
 
         if (class_exists('Illuminate\Support\Facades\Facade')) {
@@ -73,10 +84,14 @@ abstract class TestCase extends BaseTestCase
                 // Ignore if already set or other issues
             }
         }
+        
+        self::$initialized = true;
     }
 
     protected function app(string $abstract)
     {
+        $this->initializeEnvironment();
+
         if (function_exists('app')) {
             return \app($abstract);
         }
