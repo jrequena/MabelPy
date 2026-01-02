@@ -79,6 +79,57 @@ if (!class_exists('Illuminate\Database\Query\Builder')) {
     }');
 }
 
+/**
+ * Helper to create dummy implementations of interfaces
+ */
+if (!function_exists('App\Tests\createDummyInterface')) {
+    function createDummyInterface($interface, $className) {
+        if (!interface_exists($interface) || class_exists($className)) return;
+        $rc = new \ReflectionClass($interface);
+        $methods = '';
+        foreach ($rc->getMethods() as $method) {
+            $params = [];
+            foreach ($method->getParameters() as $param) {
+                $p = '';
+                if ($param->hasType()) {
+                    $type = $param->getType();
+                    if ($type instanceof \ReflectionNamedType) {
+                        $typeName = $type->getName();
+                        if ($typeName !== 'mixed' && (PHP_VERSION_ID >= 80000 || $typeName !== 'static')) {
+                            $p .= ($type->allowsNull() ? '?' : '') . $typeName . ' ';
+                        }
+                    }
+                }
+                $p .= '$' . $param->getName();
+                if ($param->isDefaultValueAvailable()) {
+                    $p .= ' = ' . var_export($param->getDefaultValue(), true);
+                } elseif ($param->isOptional()) {
+                    $p .= ' = null';
+                }
+                $params[] = $p;
+            }
+            $returnType = '';
+            if (PHP_VERSION_ID >= 70000 && $method->hasReturnType()) {
+                $rType = $method->getReturnType();
+                if ($rType instanceof \ReflectionNamedType) {
+                    $rName = $rType->getName();
+                    if ($rName !== 'mixed' && $rName !== 'static') {
+                        $returnType = ': ' . ($rType->allowsNull() ? '?' : '') . $rName;
+                    }
+                }
+            }
+            $methods .= "public function {$method->getName()}(" . implode(', ', $params) . ")$returnType { return " . '$this' . "; }\n";
+        }
+        $parts = explode('\\', $className);
+        $shortName = array_pop($parts);
+        $namespace = implode('\\', $parts);
+        eval(($namespace ? "namespace $namespace; " : "") . "class $shortName implements \\$interface { $methods public function __call(" . '$m, $a' . ") { return " . '$this' . "; } }");
+    }
+}
+
+createDummyInterface('Illuminate\Database\ConnectionInterface', 'App\Tests\DummyConnection');
+createDummyInterface('Illuminate\Database\ConnectionResolverInterface', 'App\Tests\DummyConnectionResolver');
+
 abstract class TestCase extends BaseTestCase
 {
     private static bool $initialized = false;
@@ -104,23 +155,82 @@ abstract class TestCase extends BaseTestCase
             if (!function_exists('app') || !(@\app() instanceof \Illuminate\Container\Container)) {
                 $container = new \Illuminate\Container\Container();
                 
-                $connMock = new class implements \Illuminate\Database\ConnectionInterface {
+                if (class_exists('App\Tests\DummyConnection')) {
+                    $connMock = new \App\Tests\DummyConnection();
+                } else {
+                    $connMock = new class {
+                        public function table($table, $as = null) { return $this; }
+                        public function getName() { return 'default'; }
+                        public function query() { return $this; }
+                        public function __call($m, $a) { return $this; }
+                    };
+                }
+
+                // Override some methods to have real-ish behavior
+                $dbMock = new class($connMock) implements \Illuminate\Database\ConnectionResolverInterface {
+                    private $conn;
+                    public function __construct($conn) { $this->conn = $conn; }
+                    public function transaction($callback) { return $callback(); }
+                    public function connection($n = null) { return $this->conn; }
+                    public function getDefaultConnection() { return 'default'; }
+                    public function setDefaultConnection($name) {}
+                    public function getName() { return 'default'; }
+                    public function __call($m, $a) { 
+                        if (method_exists($this->conn, $m) || method_exists($this->conn, '__call')) {
+                            return $this->conn->$m(...$a);
+                        }
+                        return $this->conn;
+                    }
+                };
+
+                // Ensure connMock->query() returns a Query Builder if possible
+                if ($connMock instanceof \App\Tests\DummyConnection || method_exists($connMock, 'query')) {
+                    // We can't easily override methods on an existing instance, but we can use a proxy or just rely on __call if we didn't implement query() in DummyConnection
+                }
+                
+                // Let's refine connMock to return a Query Builder
+                $connMock = new class($connMock) {
+                    private $inner;
+                    public function __construct($inner) { $this->inner = $inner; }
                     public function table($table, $as = null) { 
                         if (class_exists(\Illuminate\Database\Query\Builder::class)) {
                             return new \Illuminate\Database\Query\Builder($this);
                         }
-                        return new class { public function __call($m, $a) { return $this; } };
+                        return $this;
                     }
-                    public function getName() { return 'default'; }
                     public function query() { 
                         if (class_exists(\Illuminate\Database\Query\Builder::class)) {
                             return new \Illuminate\Database\Query\Builder($this);
                         }
-                        return new class { public function __call($m, $a) { return $this; } };
+                        return $this;
                     }
-                    public function __call($m, $a) { return $this; }
+                    public function __call($m, $a) { return $this->inner->$m(...$a); }
+                    // To satisfy type hints
+                    public function getName() { return 'default'; }
                 };
+                
+                // Wait, if I use the anonymous class above, it won't implement ConnectionInterface.
+                // I need to use the DummyConnection class if it exists.
+                
+                if (class_exists('App\Tests\DummyConnection')) {
+                    eval('namespace App\Tests; class EnhancedConnection extends DummyConnection {
+                        public function table($table, $as = null) { 
+                            if (class_exists(\Illuminate\Database\Query\Builder::class)) {
+                                return new \Illuminate\Database\Query\Builder($this);
+                            }
+                            return $this;
+                        }
+                        public function query() { 
+                            if (class_exists(\Illuminate\Database\Query\Builder::class)) {
+                                return new \Illuminate\Database\Query\Builder($this);
+                            }
+                            return $this;
+                        }
+                    }');
+                    $connMock = new \App\Tests\EnhancedConnection();
+                }
 
+                // Re-create dbMock with the correct connMock
                 $dbMock = new class($connMock) implements \Illuminate\Database\ConnectionResolverInterface {
                     private $conn;
                     public function __construct($conn) { $this->conn = $conn; }
@@ -131,6 +241,7 @@ abstract class TestCase extends BaseTestCase
                     public function getName() { return 'default'; }
                     public function __call($m, $a) { return $this->conn->$m(...$a); }
                 };
+
                 $container->singleton('db', fn() => $dbMock);
                 $container->alias('db', 'db.factory');
                 \Illuminate\Support\Facades\Facade::setFacadeApplication($container);
