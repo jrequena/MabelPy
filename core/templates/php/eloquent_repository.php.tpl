@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace {{ namespace }};
 
 use {{ interface_import }};
-use {{ model_import }};
+use {{ model_import }} as EloquentModel;
 use {{ entity_import }};
 use {{ mapper_import }};
 {% for import in imports %}
@@ -15,7 +15,7 @@ use {{ import }};
 final class {{ class_name }} implements {{ interface_name }}
 {
     public function __construct(
-        private readonly {{ model_name }} $model
+        private readonly EloquentModel $model
     ) {
     }
 
@@ -49,7 +49,7 @@ final class {{ class_name }} implements {{ interface_name }}
             ])
 {% endif %}
             ->all()
-            ->map(fn({{ model_name }} $item) => {{ mapper_name }}::fromArray($item->toArray()))
+            ->map(fn(EloquentModel $item) => {{ mapper_name }}::fromArray($item->toArray()))
             ->toArray();
     }
 

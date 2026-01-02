@@ -28,9 +28,13 @@ abstract class TestCase extends BaseTestCase
             return \app($abstract);
         }
         
-        // Manual instantiation for standalone (stubbed) using Reflection
         try {
             $reflection = new \ReflectionClass($abstract);
+            
+            if ($reflection->isInterface()) {
+                return $this->createMock($abstract);
+            }
+
             $constructor = $reflection->getConstructor();
             
             if (null === $constructor) {
@@ -43,18 +47,7 @@ abstract class TestCase extends BaseTestCase
             foreach ($parameters as $parameter) {
                 $type = $parameter->getType();
                 if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
-                    $typeName = $type->getName();
-                    $typeReflection = new \ReflectionClass($typeName);
-                    if ($typeReflection->isFinal()) {
-                        // If final, try to instantiate directly or just null if it fails
-                        try {
-                            $dependencies[] = new $typeName();
-                        } catch (\Throwable $e) {
-                            $dependencies[] = null;
-                        }
-                    } else {
-                        $dependencies[] = $this->createMock($typeName);
-                    }
+                    $dependencies[] = $this->app($type->getName());
                 } else {
                     $dependencies[] = null;
                 }
@@ -62,12 +55,13 @@ abstract class TestCase extends BaseTestCase
             
             return $reflection->newInstanceArgs($dependencies);
         } catch (\Throwable $e) {
-            $reflection = new \ReflectionClass($abstract);
-            if ($reflection->isFinal()) {
-                 // Final classes cannot be mocked, throw the original error or try to instantiate
-                 throw $e;
+            if (class_exists($abstract)) {
+                $reflection = new \ReflectionClass($abstract);
+                if (!$reflection->isFinal()) {
+                    return $this->createMock($abstract);
+                }
             }
-            return $this->createMock($abstract);
+            throw $e;
         }
     }
 }
