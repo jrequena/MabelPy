@@ -2,37 +2,36 @@
 
 declare(strict_types=1);
 
-namespace {{ namespace }};
+namespace App\Tests\User;
 
-{% for import in imports %}
-use {{ import }};
-{% endfor %}
-use {{ base_test_namespace }}\TestCase;
-use {{ base_test_namespace }}\RefreshDatabase;
+use App\Domain\Enum\UserStatus;
+use App\Domain\User;
+use App\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
+use App\Tests\TestCase;
+use App\Tests\RefreshDatabase;
 
-final class {{ class_name }}Test extends TestCase
+final class EloquentUserRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
-    private {{ class_name }} $repository;
+    private EloquentUserRepository $repository;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = $this->app({{ class_name }}::class);
+        $this->repository = $this->app(EloquentUserRepository::class);
     }
 
     public function test_can_save_and_find_entity(): void
     {
         // 1. Create domain entity
-        $entity = new {{ entity_name }}(
-{% for field in fields %}
-{% if not field.is_relation %}
-            {{ field.sample_value }},
-{% else %}
-            null, // Relation: {{ field.raw_name }}
-{% endif %}
-{% endfor %}
+        $entity = new User(
+            1,
+            'sample',
+            'sample',
+            UserStatus::ACTIVE,
+            new \DateTimeImmutable(),
+            null, // Relation: posts
         );
 
         // 2. Save via repository
@@ -47,14 +46,13 @@ final class {{ class_name }}Test extends TestCase
 
     public function test_can_delete_entity(): void
     {
-        $entity = new {{ entity_name }}(
-{% for field in fields %}
-{% if not field.is_relation %}
-            {{ field.sample_value }},
-{% else %}
+        $entity = new User(
+            1,
+            'sample',
+            'sample',
+            UserStatus::ACTIVE,
+            new \DateTimeImmutable(),
             null,
-{% endif %}
-{% endfor %}
         );
 
         $this->repository->save($entity);

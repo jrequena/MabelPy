@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Post;
 
 use App\Domain\Post;
+
 use App\Tests\TestCase;
 
 final class PostTest extends TestCase

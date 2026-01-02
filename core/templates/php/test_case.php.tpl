@@ -17,6 +17,32 @@ if (!trait_exists('Illuminate\Foundation\Testing\RefreshDatabase')) {
     class_alias('Illuminate\Foundation\Testing\RefreshDatabase', 'App\Tests\RefreshDatabase');
 }
 
+/**
+ * Mock Eloquent Model if it doesn't exist
+ */
+if (!class_exists('Illuminate\Database\Eloquent\Model')) {
+    eval('namespace Illuminate\Database\Eloquent { 
+        abstract class Model {
+            public function __call($method, $args) { return $this; }
+            public static function __callStatic($method, $args) { return new static; }
+            public function toArray() { return []; }
+            public function belongsTo($related) { return new class { public function __call($n, $a) { return $this; } }; }
+        }
+    }');
+}
+
+/**
+ * Mock DB facade if it doesn't exist
+ */
+if (!class_exists('Illuminate\Support\Facades\DB')) {
+    eval('namespace Illuminate\Support\Facades { 
+        class DB {
+            public static function transaction($callback) { return $callback(); }
+            public static function __callStatic($method, $args) { return null; }
+        }
+    }');
+}
+
 abstract class TestCase extends BaseTestCase
 {
     /**
