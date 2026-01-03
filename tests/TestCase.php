@@ -6,9 +6,6 @@ namespace App\Tests;
 
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Illuminate\Database\Capsule\Manager as Capsule;
-use Illuminate\Events\Dispatcher;
-use Illuminate\Container\Container;
-use Illuminate\Support\Facades\Facade;
 use ReflectionClass;
 
 /**
@@ -21,7 +18,7 @@ trait RefreshDatabase {
 abstract class TestCase extends BaseTestCase
 {
     private static bool $initialized = false;
-    protected static ?Container $container = null;
+    protected static $container = null;
 
     protected function setUp(): void
     {
@@ -40,10 +37,22 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
-        $container = new Container();
-        self::$container = $container;
+        if (class_exists('Illuminate\Container\Container')) {
+            $container = new \Illuminate\Container\Container();
+            self::$container = $container;
+        } else {
+            // Minimal container if illuminate/container is missing
+            self::$container = new class {
+                private $instances = [];
+                public function instance($abstract, $instance) { $this->instances[$abstract] = $instance; return $instance; }
+                public function make($abstract) { return $this->instances[$abstract] ?? null; }
+                public function has($abstract) { return isset($this->instances[$abstract]); }
+                public function singleton($abstract, $concrete) { $this->instances[$abstract] = $concrete(); }
+                public function alias($abstract, $alias) { if (isset($this->instances[$abstract])) $this->instances[$alias] = &$this->instances[$abstract]; }
+            };
+        }
 
-        $capsule = new Capsule($container);
+        $capsule = new Capsule(self::$container instanceof \Illuminate\Container\Container ? self::$container : null);
 
         $capsule->addConnection([
             'driver' => 'sqlite',
@@ -51,13 +60,18 @@ abstract class TestCase extends BaseTestCase
             'prefix' => '',
         ]);
 
-        $capsule->setEventDispatcher(new Dispatcher($container));
+        if (class_exists('Illuminate\Events\Dispatcher')) {
+            $capsule->setEventDispatcher(new \Illuminate\Events\Dispatcher(self::$container instanceof \Illuminate\Container\Container ? self::$container : null));
+        }
+
         $capsule->setAsGlobal();
         $capsule->bootEloquent();
         
-        if (class_exists(Facade::class)) {
-            Facade::setFacadeApplication($container);
-            $container->instance('db', $capsule->getDatabaseManager());
+        if (class_exists('Illuminate\Support\Facades\Facade')) {
+            \Illuminate\Support\Facades\Facade::setFacadeApplication(self::$container instanceof \Illuminate\Container\Container ? self::$container : null);
+            if (method_exists(self::$container, 'instance')) {
+                self::$container->instance('db', $capsule->getDatabaseManager());
+            }
         }
 
         $this->setUpDatabase();
@@ -88,7 +102,7 @@ abstract class TestCase extends BaseTestCase
     {
         $this->initializeEnvironment();
 
-        if (self::$container->has($abstract)) {
+        if (self::$container && method_exists(self::$container, 'has') && self::$container->has($abstract)) {
             return self::$container->make($abstract);
         }
 
@@ -124,11 +138,19 @@ abstract class TestCase extends BaseTestCase
                 $instance = $reflection->newInstanceArgs($dependencies);
             }
             
-            self::$container->instance($abstract, $instance);
+            if (self::$container && method_exists(self::$container, 'instance')) {
+                self::$container->instance($abstract, $instance);
+            }
             return $instance;
             
         } catch (\Throwable $e) {
-            return $this->createMock($abstract);
+            if (class_exists($abstract)) {
+                $reflection = new ReflectionClass($abstract);
+                if (!$reflection->isFinal()) {
+                    return $this->createMock($abstract);
+                }
+            }
+            throw $e;
         }
     }
 }
