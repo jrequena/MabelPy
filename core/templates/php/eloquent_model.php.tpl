@@ -22,7 +22,7 @@ final class {{ class_name }} extends Model
 {% for rel in relationships %}
     public function {{ rel.name }}(): {{ rel.return_type }}
     {
-        return $this->{{ rel.method }}('{{ rel.target_class }}');
+        return $this->{{ rel.method }}({{ rel.target_class }});
     }
 
 {% endfor %}

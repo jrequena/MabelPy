@@ -35,8 +35,10 @@ class PhpEloquentModelGenerator(BaseGenerator):
                             "name": target.lower(),
                             "method": "belongsTo",
                             "return_type": "\\Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
-                            "target_class": target
+                            "target_class": f"{target}::class"
                         })
+                        if target != entity_name:
+                            imports.add(f"{namespace}\\{target}")
                         fillable.append(f"{target.lower()}_id")
                         continue
                     if "has_many" in f_def:
@@ -45,8 +47,10 @@ class PhpEloquentModelGenerator(BaseGenerator):
                             "name": name,
                             "method": "hasMany",
                             "return_type": "\\Illuminate\\Database\\Eloquent\\Relations\\HasMany",
-                            "target_class": target
+                            "target_class": f"{target}::class"
                         })
+                        if target != entity_name:
+                            imports.add(f"{namespace}\\{target}")
                         continue
                     if "has_one" in f_def:
                         target = f_def["has_one"]
@@ -54,8 +58,10 @@ class PhpEloquentModelGenerator(BaseGenerator):
                             "name": name,
                             "method": "hasOne",
                             "return_type": "\\Illuminate\\Database\\Eloquent\\Relations\\HasOne",
-                            "target_class": target
+                            "target_class": f"{target}::class"
                         })
+                        if target != entity_name:
+                            imports.add(f"{namespace}\\{target}")
                         continue
                 
                 fillable.append(name)
