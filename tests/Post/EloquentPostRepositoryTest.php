@@ -7,9 +7,12 @@ namespace App\Tests\Post;
 use App\Domain\Post;
 use App\Infrastructure\Persistence\Eloquent\EloquentPostRepository;
 use App\Tests\TestCase;
+use App\Tests\RefreshDatabase;
 
 final class EloquentPostRepositoryTest extends TestCase
 {
+    use RefreshDatabase;
+
     private EloquentPostRepository $repository;
 
     protected function setUp(): void

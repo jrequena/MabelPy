@@ -8,9 +8,12 @@ use App\Domain\Enum\UserStatus;
 use App\Domain\User;
 use App\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 use App\Tests\TestCase;
+use App\Tests\RefreshDatabase;
 
 final class EloquentUserRepositoryTest extends TestCase
 {
+    use RefreshDatabase;
+
     private EloquentUserRepository $repository;
 
     protected function setUp(): void
